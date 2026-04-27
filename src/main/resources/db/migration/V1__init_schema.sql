@@ -179,17 +179,17 @@ CREATE TABLE `forum_post_image` (
 -- 7. 双层回复表
 -- 约定：
 -- 1. 一级回复：parent_id = 0
--- 2. 二级回复：parent_id = 一级回复ID
--- 3. reply_to_reply_id = 实际被回复的那条回复ID
--- 4. 业务层禁止出现三级回复
+-- 2. 所有楼中楼回复：parent_id = 所属一级回复ID
+-- 3. reply_to_reply_id = 实际被回复的那条回复ID，可指向一级或楼中楼回复
+-- 4. 因此支持“回复某条楼中楼回复”，但展示层仍保持双层结构，避免无限缩进
 -- ============================================
 CREATE TABLE `forum_reply` (
   `id` BIGINT UNSIGNED NOT NULL COMMENT '雪花ID',
   `post_id` BIGINT UNSIGNED NOT NULL COMMENT '帖子ID',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT '回复用户ID',
-  `parent_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=一级回复；>0=所属一级回复ID',
-  `reply_to_reply_id` BIGINT UNSIGNED DEFAULT NULL COMMENT '实际被回复的回复ID，仅二级回复使用',
-  `reply_to_user_id` BIGINT UNSIGNED DEFAULT NULL COMMENT '被回复用户ID，仅二级回复使用',
+  `parent_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=一级回复；>0=所属一级回复ID（统一折叠到一级楼层）',
+  `reply_to_reply_id` BIGINT UNSIGNED DEFAULT NULL COMMENT '实际被回复的回复ID，可指向一级或楼中楼回复',
+  `reply_to_user_id` BIGINT UNSIGNED DEFAULT NULL COMMENT '实际被回复用户ID',
   `content` TEXT NOT NULL COMMENT '回复内容',
   `content_type` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '1纯文本 2图文',
   `image_url` VARCHAR(255) DEFAULT NULL COMMENT '单图回复URL',
