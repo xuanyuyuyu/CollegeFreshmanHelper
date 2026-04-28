@@ -1,77 +1,108 @@
 <template>
   <MainLayout>
-    <section class="mx-auto box-border h-[calc(100vh-88px)] w-full max-w-[1680px] overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
-      <div class="grid h-full min-h-0 gap-6 xl:grid-cols-[1.45fr_0.55fr]">
-        <div class="min-h-0">
-          <div class="flex h-full min-h-0 flex-col rounded-[32px] border border-brand/10 bg-white p-6 shadow-soft sm:p-8">
-            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <div class="text-xs font-bold uppercase tracking-[0.3em] text-brand">Forum Plaza</div>
-                <h1 class="mt-3 text-3xl font-bold text-slate-800 sm:text-[40px]">论坛交流</h1>
-                <p class="mt-3 max-w-4xl text-sm leading-7 text-slate-500">
-                  当前这套前端按现有后端接口重建，优先保证帖子列表、帖子详情和双层回复结构可以直接联调。
-                </p>
-              </div>
+    <section class="mx-auto w-full max-w-[1760px] px-4 py-6 sm:px-6 lg:px-8">
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1.75fr)_320px]">
+        <div class="min-w-0">
+          <div class="overflow-hidden rounded-[30px] border border-brand/10 bg-white shadow-soft">
+            <div class="border-b border-slate-100 bg-[linear-gradient(180deg,#fff_0%,#fbf7f6_100%)] px-5 py-5 sm:px-7">
+              <div class="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+                <div>
+                  <div class="text-xs font-bold uppercase tracking-[0.3em] text-brand">Forum Plaza</div>
+                  <h1 class="mt-3 text-[30px] font-bold tracking-tight text-slate-900 sm:text-[36px]">论坛交流</h1>
+                  <p class="mt-3 max-w-4xl text-sm leading-7 text-slate-500">
+                    宿舍、学习、食堂、军训与校园生活问题集中在这里讨论。现在采用更接近贴吧的长列表布局，让浏览帖子成为页面核心。
+                  </p>
+                </div>
 
-              <div class="flex flex-wrap gap-3">
-                <el-select v-model="sortType" class="!w-[140px]" @change="loadPosts">
-                  <el-option label="最新发布" value="latest" />
-                  <el-option label="热门优先" value="hottest" />
-                </el-select>
-                <el-button class="!border-brand/15 !text-brand" :loading="loadingPosts" @click="loadPosts">
-                  刷新帖子
-                </el-button>
-                <el-button type="danger" class="!border-brand !bg-brand hover:!bg-brand-dark" @click="currentUser ? scrollToComposer() : openAuth('login')">
-                  {{ currentUser ? '发布新帖' : '登录后发帖' }}
-                </el-button>
+                <div class="flex flex-wrap gap-3">
+                  <el-select v-model="sortType" class="!w-[144px]" @change="loadPosts">
+                    <el-option label="最新发布" value="latest" />
+                    <el-option label="热门优先" value="hottest" />
+                  </el-select>
+                  <el-button class="!border-brand/15 !text-brand" :loading="loadingPosts" @click="loadPosts">
+                    刷新帖子
+                  </el-button>
+                  <el-button type="danger" class="!border-brand !bg-brand hover:!bg-brand-dark" @click="currentUser ? scrollToComposer() : openAuth('login')">
+                    {{ currentUser ? '发布新帖' : '登录后发帖' }}
+                  </el-button>
+                </div>
               </div>
             </div>
 
-            <div class="mt-6 min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
+            <div class="flex flex-wrap items-center gap-3 border-b border-slate-100 bg-slate-50/80 px-5 py-4 sm:px-7">
+              <button
+                v-for="tab in categoryTabs"
+                :key="tab.value"
+                type="button"
+                class="rounded-full px-4 py-2 text-sm font-semibold transition"
+                :class="selectedCategory === tab.value ? 'bg-brand text-white shadow-soft' : 'bg-white text-slate-500 hover:text-brand'"
+                @click="selectedCategory = tab.value"
+              >
+                {{ tab.label }}
+              </button>
+            </div>
+
+            <div class="divide-y divide-slate-100">
               <article
-                v-for="post in posts"
+                v-for="post in filteredPosts"
                 :key="post.id"
-                class="overflow-hidden rounded-[26px] border border-slate-100 bg-[linear-gradient(180deg,#fbfbfc_0%,#f8fafc_100%)] transition hover:border-brand/15 hover:bg-white hover:shadow-soft"
+                class="group transition hover:bg-[linear-gradient(180deg,#fff_0%,#fcfbfb_100%)]"
               >
                 <button type="button" class="block w-full text-left" @click="goToPost(post.id)">
-                  <div class="p-5 sm:p-6">
-                    <div class="flex items-start gap-4">
-                      <div v-if="post.author?.avatarUrl" class="h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/80 bg-white shadow-soft">
+                  <div class="flex gap-4 px-5 py-5 sm:px-7">
+                    <div class="shrink-0">
+                      <div v-if="post.author?.avatarUrl" class="h-12 w-12 overflow-hidden rounded-full border border-white/80 bg-white shadow-soft">
                         <img :src="post.author.avatarUrl" alt="author-avatar" class="h-full w-full object-cover" />
                       </div>
-                      <div v-else class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#fff_0%,#f4e3e0_100%)] text-lg font-bold text-brand shadow-soft">
+                      <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-[linear-gradient(135deg,#fff_0%,#f4e3e0_100%)] text-base font-bold text-brand shadow-soft">
                         {{ fallbackInitial(post.author?.nickname || post.author?.userId) }}
                       </div>
+                    </div>
 
-                      <div class="min-w-0 flex-1">
-                        <div class="flex flex-wrap items-center gap-3">
-                          <div class="text-lg font-bold tracking-tight text-slate-800 sm:text-xl">
-                            {{ post.author?.nickname || '匿名用户' }}
-                          </div>
-                          <span v-if="post.author?.title" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                            {{ post.author.title }}
-                          </span>
-                          <span v-if="post.tags" class="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">
-                            {{ post.tags }}
-                          </span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <div class="text-[15px] font-semibold text-slate-700">
+                          {{ post.author?.nickname || '匿名用户' }}
                         </div>
-                        <div class="mt-2 text-xs text-slate-400 sm:text-sm">
-                          发布于 {{ formatDateTime(post.publishedAt || post.createdAt) }}
+                        <span v-if="post.author?.title" class="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">
+                          {{ post.author.title }}
+                        </span>
+                        <span v-if="post.tags" class="rounded-full bg-brand/8 px-3 py-1 text-[11px] font-semibold text-brand">
+                          {{ post.tags }}
+                        </span>
+                        <span class="text-xs text-slate-400">
+                          {{ formatDateTime(post.publishedAt || post.createdAt) }}
+                        </span>
+                      </div>
+
+                      <div class="mt-3 flex items-start gap-4">
+                        <div class="min-w-0 flex-1">
+                          <h2 class="line-clamp-1 text-[21px] font-bold tracking-tight text-slate-900 transition group-hover:text-brand sm:text-[23px]">
+                            {{ post.title }}
+                          </h2>
+                          <p class="mt-3 line-clamp-3 text-[14px] leading-7 text-slate-600">
+                            {{ post.contentPreview || '这条帖子还没有正文摘要。' }}
+                          </p>
                         </div>
 
-                        <h2 class="mt-4 text-2xl font-bold leading-tight text-slate-900 sm:text-[26px]">
-                          {{ post.title }}
-                        </h2>
-                        <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
-                          {{ post.contentPreview || '这条帖子还没有正文摘要。' }}
-                        </p>
+                        <div
+                          v-if="post.firstImageUrl"
+                          class="hidden h-[96px] w-[128px] shrink-0 overflow-hidden rounded-[18px] bg-slate-100 lg:block"
+                        >
+                          <img :src="post.firstImageUrl" alt="post-cover" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </button>
 
-                <div class="flex items-center gap-8 border-t border-slate-200/80 bg-white px-5 py-3 text-sm text-slate-500 sm:px-6">
-                  <span>评论 {{ post.replyCount || 0 }}</span>
+                <div class="flex flex-wrap items-center gap-x-8 gap-y-3 px-5 pb-5 text-[13px] text-slate-500 sm:px-7">
+                  <button type="button" class="inline-flex items-center gap-1.5 transition hover:text-brand" @click.stop="goToPost(post.id)">
+                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    回复 {{ post.replyCount || 0 }}
+                  </button>
                   <button
                     type="button"
                     class="inline-flex items-center gap-1.5 transition"
@@ -83,35 +114,39 @@
                     </svg>
                     {{ post.liked ? '已赞' : '点赞' }} {{ post.likeCount || 0 }}
                   </button>
-                  <span>浏览 {{ post.viewCount || 0 }}</span>
+                  <span class="inline-flex items-center gap-1.5">
+                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    浏览 {{ post.viewCount || 0 }}
+                  </span>
                 </div>
               </article>
 
-              <div v-if="!loadingPosts && !posts.length" class="rounded-[24px] bg-slate-50 p-8 text-sm text-slate-500">
-                当前还没有可展示的帖子。
+              <div v-if="!loadingPosts && !filteredPosts.length" class="px-5 py-10 text-sm text-slate-500 sm:px-7">
+                当前分类下还没有可展示的帖子。
               </div>
             </div>
           </div>
         </div>
 
-        <aside ref="composerRef" class="sticky top-[108px] h-fit self-start pr-1">
+        <aside ref="composerRef" class="xl:sticky xl:top-[104px] xl:self-start">
           <div class="space-y-4">
-            <div class="rounded-[28px] border border-brand/10 bg-white p-5 shadow-soft">
+            <div class="rounded-[26px] border border-brand/10 bg-white p-5 shadow-soft">
               <div class="text-xs font-bold uppercase tracking-[0.3em] text-brand">Post Tips</div>
-              <h3 class="mt-2 text-[24px] font-bold text-slate-800">发帖建议</h3>
-              <div class="mt-3 space-y-2 text-sm leading-7 text-slate-500">
-                <p>标题尽量直接点明问题，例如“宿舍床垫需要自己买吗”。</p>
-                <p>正文里先写背景，再写你的具体困惑，老生更容易快速给出有效回复。</p>
-                <p>当前标签先支持单值输入，后续再和更完整的分类体系对齐。</p>
+              <h3 class="mt-2 text-[22px] font-bold text-slate-900">发帖建议</h3>
+              <div class="mt-3 space-y-2 text-[13px] leading-6 text-slate-500">
+                <p>标题尽量点明场景，例如“军训鞋垫需要自备吗”。</p>
+                <p>正文先写背景，再写困惑，老生更容易给到有效建议。</p>
+                <p>如果问题只属于单一主题，优先选择一个明确标签。</p>
               </div>
             </div>
 
-            <div class="rounded-[28px] border border-brand/10 bg-white p-5 shadow-soft">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-xs font-bold uppercase tracking-[0.3em] text-brand">Create Post</div>
-                  <h3 class="mt-2 text-[24px] font-bold text-slate-800">发布新帖</h3>
-                </div>
+            <div class="rounded-[26px] border border-brand/10 bg-white p-5 shadow-soft">
+              <div>
+                <div class="text-xs font-bold uppercase tracking-[0.3em] text-brand">Create Post</div>
+                <h3 class="mt-2 text-[22px] font-bold text-slate-900">发布新帖</h3>
               </div>
 
               <div v-if="currentUser" class="mt-4 space-y-3">
@@ -131,7 +166,7 @@
                 </el-button>
               </div>
 
-              <div v-else class="mt-4 rounded-[20px] bg-slate-50 p-4 text-sm leading-6 text-slate-500">
+              <div v-else class="mt-4 rounded-[18px] bg-slate-50 p-4 text-sm leading-6 text-slate-500">
                 当前未登录，请先登录后发帖。
                 <el-button type="danger" class="!mt-3 !border-brand !bg-brand !font-semibold hover:!bg-brand-dark" @click="openAuth('login')">
                   去登录
@@ -146,7 +181,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import MainLayout from '../layouts/MainLayout.vue'
@@ -161,11 +196,27 @@ const posts = ref([])
 const loadingPosts = ref(false)
 const submittingPost = ref(false)
 const sortType = ref('latest')
+const selectedCategory = ref('all')
 const tagOptions = ['宿舍', '学习', '食堂', '军训', '其他']
+const categoryTabs = [
+  { label: '全部帖子', value: 'all' },
+  { label: '宿舍', value: '宿舍' },
+  { label: '学习', value: '学习' },
+  { label: '食堂', value: '食堂' },
+  { label: '军训', value: '军训' },
+  { label: '其他', value: '其他' }
+]
 const postForm = reactive({
   title: '',
   tags: '',
   content: ''
+})
+
+const filteredPosts = computed(() => {
+  if (selectedCategory.value === 'all') {
+    return posts.value
+  }
+  return posts.value.filter((post) => post.tags === selectedCategory.value)
 })
 
 function fallbackInitial(value) {
@@ -193,7 +244,7 @@ function goToPost(postId) {
 async function loadPosts() {
   loadingPosts.value = true
   try {
-    const page = await fetchPostPage({ pageNum: 1, pageSize: 12, sortType: sortType.value })
+    const page = await fetchPostPage({ pageNum: 1, pageSize: 16, sortType: sortType.value })
     posts.value = page.records || []
   } catch (error) {
     ElMessage.error(`帖子列表加载失败: ${error.message}`)

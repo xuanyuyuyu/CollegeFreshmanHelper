@@ -4,37 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3b40f802-aeff-4f09-8847-43dac742294a" name="更改" comment="完成基本功能">
-      <change beforePath="$PROJECT_DIR$/.idea/claudeCodeTabState.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/claudeCodeTabState.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/common/util/LoginUserContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/common/util/LoginUserContext.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/controller/ForumPostController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/controller/ForumPostController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/controller/ForumReplyController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/controller/ForumReplyController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/service/ForumPostService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/service/ForumPostService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/service/ForumReplyService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/service/ForumReplyService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/service/impl/ForumPostServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/service/impl/ForumPostServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/service/impl/ForumReplyServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/service/impl/ForumReplyServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/vo/ForumPostDetailVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/vo/ForumPostDetailVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/vo/ForumReplyVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/forum/vo/ForumReplyVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/common/util/LoginUserContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/common/util/LoginUserContext.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/controller/ForumPostController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/controller/ForumPostController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/controller/ForumReplyController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/controller/ForumReplyController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/ForumPostService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/ForumPostService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/ForumReplyService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/ForumReplyService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/impl/ForumPostServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/impl/ForumPostServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/impl/ForumReplyServiceImpl$ResolvedReplyTarget.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/impl/ForumReplyServiceImpl$ResolvedReplyTarget.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/impl/ForumReplyServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/impl/ForumReplyServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/vo/ForumPostDetailVO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/vo/ForumPostDetailVO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/vo/ForumReplyVO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/vo/ForumReplyVO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+    <list default="true" id="3b40f802-aeff-4f09-8847-43dac742294a" name="更改" comment="前端构建1">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ForumDetailPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ForumDetailPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ForumPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ForumPage.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,6 +102,9 @@
       </set>
     </attachedChunks>
   </component>
+  <component name="StructureViewState">
+    <option name="selectedTab" value="逻辑" />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="默认任务">
       <changelist id="3b40f802-aeff-4f09-8847-43dac742294a" name="更改" comment="" />
@@ -164,7 +140,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777289451863</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="前端构建1">
+      <option name="closed" value="true" />
+      <created>1777355284358</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1777355284358</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -173,6 +157,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="初始化" />
     <MESSAGE value="完成基本功能" />
-    <option name="LAST_COMMIT_MESSAGE" value="完成基本功能" />
+    <MESSAGE value="前端构建1" />
+    <option name="LAST_COMMIT_MESSAGE" value="前端构建1" />
   </component>
 </project>
