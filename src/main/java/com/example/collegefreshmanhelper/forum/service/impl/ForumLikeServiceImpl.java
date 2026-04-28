@@ -1,8 +1,11 @@
 package com.example.collegefreshmanhelper.forum.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.collegefreshmanhelper.common.exception.BusinessException;
+import com.example.collegefreshmanhelper.forum.entity.ForumLikeRecord;
 import com.example.collegefreshmanhelper.forum.entity.ForumPost;
 import com.example.collegefreshmanhelper.forum.entity.ForumReply;
+import com.example.collegefreshmanhelper.forum.mapper.ForumLikeRecordMapper;
 import com.example.collegefreshmanhelper.forum.mapper.ForumPostMapper;
 import com.example.collegefreshmanhelper.forum.mapper.ForumReplyMapper;
 import com.example.collegefreshmanhelper.forum.service.ForumLikeService;
@@ -13,6 +16,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +37,7 @@ public class ForumLikeServiceImpl implements ForumLikeService {
     private static final String REPLY_DIRTY_KEY = "forum:like:reply:dirty";
 
     private final StringRedisTemplate stringRedisTemplate;
+    private final ForumLikeRecordMapper forumLikeRecordMapper;
     private final ForumPostMapper forumPostMapper;
     private final ForumReplyMapper forumReplyMapper;
     private final UserService userService;
@@ -43,11 +48,14 @@ public class ForumLikeServiceImpl implements ForumLikeService {
         ForumPost post = forumPostMapper.selectById(postId);
         validatePost(post);
         String key = postLikeKey(postId);
+        ForumLikeRecord record = findLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_POST, postId);
+        boolean alreadyLiked = isRecordLiked(record);
         Long added = stringRedisTemplate.opsForSet().add(key, String.valueOf(currentUserId));
-        if (Long.valueOf(1L).equals(added)) {
+        if (Long.valueOf(1L).equals(added) && !alreadyLiked) {
             int currentCount = ensurePostCount(post);
             setPostCount(postId, currentCount + 1);
         }
+        upsertLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_POST, postId, true, record);
         markPostDirty(postId);
         stringRedisTemplate.expire(key, 90, TimeUnit.DAYS);
         return new LikeToggleVO(true, getPostLikeCount(postId));
@@ -58,11 +66,14 @@ public class ForumLikeServiceImpl implements ForumLikeService {
         userService.getActiveUserById(currentUserId);
         ForumPost post = forumPostMapper.selectById(postId);
         validatePost(post);
+        ForumLikeRecord record = findLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_POST, postId);
+        boolean alreadyLiked = isRecordLiked(record);
         Long removed = stringRedisTemplate.opsForSet().remove(postLikeKey(postId), String.valueOf(currentUserId));
-        if (removed != null && removed > 0) {
+        if ((removed != null && removed > 0) || alreadyLiked) {
             int currentCount = ensurePostCount(post);
             setPostCount(postId, Math.max(0, currentCount - 1));
         }
+        upsertLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_POST, postId, false, record);
         markPostDirty(postId);
         return new LikeToggleVO(false, getPostLikeCount(postId));
     }
@@ -73,11 +84,14 @@ public class ForumLikeServiceImpl implements ForumLikeService {
         ForumReply reply = forumReplyMapper.selectById(replyId);
         validateReply(reply);
         String key = replyLikeKey(replyId);
+        ForumLikeRecord record = findLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_REPLY, replyId);
+        boolean alreadyLiked = isRecordLiked(record);
         Long added = stringRedisTemplate.opsForSet().add(key, String.valueOf(currentUserId));
-        if (Long.valueOf(1L).equals(added)) {
+        if (Long.valueOf(1L).equals(added) && !alreadyLiked) {
             int currentCount = ensureReplyCount(reply);
             setReplyCount(replyId, currentCount + 1);
         }
+        upsertLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_REPLY, replyId, true, record);
         markReplyDirty(replyId);
         stringRedisTemplate.expire(key, 90, TimeUnit.DAYS);
         return new LikeToggleVO(true, getReplyLikeCount(replyId));
@@ -88,11 +102,14 @@ public class ForumLikeServiceImpl implements ForumLikeService {
         userService.getActiveUserById(currentUserId);
         ForumReply reply = forumReplyMapper.selectById(replyId);
         validateReply(reply);
+        ForumLikeRecord record = findLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_REPLY, replyId);
+        boolean alreadyLiked = isRecordLiked(record);
         Long removed = stringRedisTemplate.opsForSet().remove(replyLikeKey(replyId), String.valueOf(currentUserId));
-        if (removed != null && removed > 0) {
+        if ((removed != null && removed > 0) || alreadyLiked) {
             int currentCount = ensureReplyCount(reply);
             setReplyCount(replyId, Math.max(0, currentCount - 1));
         }
+        upsertLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_REPLY, replyId, false, record);
         markReplyDirty(replyId);
         return new LikeToggleVO(false, getReplyLikeCount(replyId));
     }
@@ -103,7 +120,10 @@ public class ForumLikeServiceImpl implements ForumLikeService {
             return false;
         }
         Boolean member = stringRedisTemplate.opsForSet().isMember(postLikeKey(postId), String.valueOf(userId));
-        return Boolean.TRUE.equals(member);
+        if (Boolean.TRUE.equals(member)) {
+            return true;
+        }
+        return hasLikeRecord(userId, ForumLikeRecord.TARGET_TYPE_POST, postId);
     }
 
     @Override
@@ -112,7 +132,10 @@ public class ForumLikeServiceImpl implements ForumLikeService {
             return false;
         }
         Boolean member = stringRedisTemplate.opsForSet().isMember(replyLikeKey(replyId), String.valueOf(userId));
-        return Boolean.TRUE.equals(member);
+        if (Boolean.TRUE.equals(member)) {
+            return true;
+        }
+        return hasLikeRecord(userId, ForumLikeRecord.TARGET_TYPE_REPLY, replyId);
     }
 
     @Override
@@ -258,5 +281,51 @@ public class ForumLikeServiceImpl implements ForumLikeService {
 
     private void setReplyCount(Long replyId, int count) {
         stringRedisTemplate.opsForHash().put(REPLY_COUNT_KEY, String.valueOf(replyId), String.valueOf(count));
+    }
+
+    private boolean hasLikeRecord(Long userId, Integer targetType, Long targetId) {
+        ForumLikeRecord record = findLikeRecord(userId, targetType, targetId);
+        return isRecordLiked(record);
+    }
+
+    private ForumLikeRecord findLikeRecord(Long userId, Integer targetType, Long targetId) {
+        return forumLikeRecordMapper.selectOne(new LambdaQueryWrapper<ForumLikeRecord>()
+                .eq(ForumLikeRecord::getUserId, userId)
+                .eq(ForumLikeRecord::getTargetType, targetType)
+                .eq(ForumLikeRecord::getTargetId, targetId)
+                .eq(ForumLikeRecord::getDeleted, 0)
+                .last("limit 1"));
+    }
+
+    private boolean isRecordLiked(ForumLikeRecord record) {
+        return record != null && Integer.valueOf(ForumLikeRecord.STATUS_LIKED).equals(record.getLikeStatus());
+    }
+
+    private void upsertLikeRecord(Long userId, Integer targetType, Long targetId, boolean liked, ForumLikeRecord existingRecord) {
+        LocalDateTime now = LocalDateTime.now();
+        ForumLikeRecord record = existingRecord;
+        if (record == null) {
+            if (!liked) {
+                return;
+            }
+            record = new ForumLikeRecord();
+            record.setUserId(userId);
+            record.setTargetType(targetType);
+            record.setTargetId(targetId);
+            record.setDeleted(0);
+            record.setLikeStatus(liked ? ForumLikeRecord.STATUS_LIKED : ForumLikeRecord.STATUS_UNLIKED);
+            record.setLikedAt(now);
+            record.setUnlikedAt(liked ? null : now);
+            forumLikeRecordMapper.insert(record);
+            return;
+        }
+        record.setLikeStatus(liked ? ForumLikeRecord.STATUS_LIKED : ForumLikeRecord.STATUS_UNLIKED);
+        if (liked) {
+            record.setLikedAt(now);
+            record.setUnlikedAt(null);
+        } else {
+            record.setUnlikedAt(now);
+        }
+        forumLikeRecordMapper.updateById(record);
     }
 }

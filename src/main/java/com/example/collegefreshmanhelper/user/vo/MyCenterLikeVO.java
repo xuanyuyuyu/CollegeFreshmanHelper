@@ -10,9 +10,5 @@ public class MyCenterLikeVO {
     private Integer totalLikeReceivedCount;
     private Integer featuredAnswerCount;
     private Integer knowledgeContributionCount;
-    private Integer rewardAppliedCount;
-    private Integer rewardPassedCount;
-    private Boolean rewardEligible;
-    private String rewardHint;
     private String title;
 }

@@ -5,6 +5,7 @@ import ForumPage from '../pages/ForumPage.vue'
 import ForumDetailPage from '../pages/ForumDetailPage.vue'
 import GuidePage from '../pages/GuidePage.vue'
 import MePage from '../pages/MePage.vue'
+import AdminPage from '../pages/AdminPage.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomePage },
@@ -12,7 +13,8 @@ const routes = [
   { path: '/forum', name: 'forum', component: ForumPage },
   { path: '/forum/:postId', name: 'forum-detail', component: ForumDetailPage },
   { path: '/guide', name: 'guide', component: GuidePage },
-  { path: '/me', name: 'me', component: MePage }
+  { path: '/me', name: 'me', component: MePage },
+  { path: '/admin', name: 'admin', component: AdminPage }
 ]
 
 export default createRouter({

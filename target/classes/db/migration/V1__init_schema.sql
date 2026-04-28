@@ -18,7 +18,6 @@ SET NAMES utf8mb4;
 
 -- 为了便于重复执行，先按依赖顺序删除旧表
 DROP TABLE IF EXISTS `admin_operation_log`;
-DROP TABLE IF EXISTS `reward_application`;
 DROP TABLE IF EXISTS `sys_user_title`;
 DROP TABLE IF EXISTS `sys_title`;
 DROP TABLE IF EXISTS `user_stats`;
@@ -70,8 +69,6 @@ CREATE TABLE `user_stats` (
   `post_like_received_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '帖子累计获赞数',
   `knowledge_contribution_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '知识库贡献数',
   `featured_answer_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '达到高质量阈值的回答数',
-  `reward_applied_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '已申请奖励次数',
-  `reward_passed_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '奖励审批通过次数',
   `last_calculated_at` DATETIME DEFAULT NULL COMMENT '最后统计更新时间',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -212,28 +209,7 @@ CREATE TABLE `forum_reply` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='论坛回复表（双层嵌套）';
 
 -- ============================================
--- 8. 奖励申请表
--- ============================================
-CREATE TABLE `reward_application` (
-  `id` BIGINT UNSIGNED NOT NULL COMMENT '雪花ID',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT '申请用户ID',
-  `title_id` BIGINT UNSIGNED DEFAULT NULL COMMENT '关联头衔ID，可为空',
-  `application_type` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '1实物奖励 2虚拟奖励 3认证标识 4其他',
-  `apply_reason` VARCHAR(500) NOT NULL COMMENT '申请理由',
-  `evidence_snapshot` JSON DEFAULT NULL COMMENT '申请时的统计快照/截图URL等',
-  `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0待审核 1已通过 2已拒绝 3已撤回',
-  `review_remark` VARCHAR(255) DEFAULT NULL COMMENT '审核备注',
-  `reviewed_by` BIGINT UNSIGNED DEFAULT NULL COMMENT '审核管理员ID',
-  `reviewed_at` DATETIME DEFAULT NULL COMMENT '审核时间',
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_reward_application_user_status` (`user_id`, `status`),
-  KEY `idx_reward_application_status_created` (`status`, `created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='奖励申请表';
-
--- ============================================
--- 9. 知识库溯源表
+-- 8. 知识库溯源表
 -- 说明：
 -- 1. 不存向量本体，向量交给 Qdrant
 -- 2. 支持三类来源：
@@ -277,13 +253,13 @@ CREATE TABLE `knowledge_qa_trace` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='知识库溯源表';
 
 -- ============================================
--- 10. 管理员操作日志表
+-- 9. 管理员操作日志表
 -- 超级管理员的删帖、封号、知识库手动录入等动作必须留痕
 -- ============================================
 CREATE TABLE `admin_operation_log` (
   `id` BIGINT UNSIGNED NOT NULL COMMENT '雪花ID',
   `admin_user_id` BIGINT UNSIGNED NOT NULL COMMENT '管理员ID',
-  `target_type` TINYINT UNSIGNED NOT NULL COMMENT '1用户 2帖子 3回复 4知识库 5奖励申请 6头衔',
+  `target_type` TINYINT UNSIGNED NOT NULL COMMENT '1用户 2帖子 3回复 4知识库 6头衔',
   `target_id` BIGINT UNSIGNED NOT NULL COMMENT '目标ID',
   `operation_type` VARCHAR(32) NOT NULL COMMENT 'BAN_USER/HIDE_POST/DELETE_REPLY/MANUAL_KB_ADD等',
   `before_data` JSON DEFAULT NULL COMMENT '操作前快照',
@@ -321,11 +297,11 @@ INSERT INTO `sys_user` (
 
 INSERT INTO `user_stats` (
   `user_id`, `post_count`, `reply_count`, `reply_like_received_count`, `post_like_received_count`,
-  `knowledge_contribution_count`, `featured_answer_count`, `reward_applied_count`, `reward_passed_count`,
+  `knowledge_contribution_count`, `featured_answer_count`,
   `last_calculated_at`, `created_at`, `updated_at`
 ) VALUES
 (
-  1000000000000000001, 0, 0, 0, 0, 0, 0, 0, 0, NOW(), NOW(), NOW()
+  1000000000000000001, 0, 0, 0, 0, 0, 0, NOW(), NOW(), NOW()
 );
 
 -- 基础头衔

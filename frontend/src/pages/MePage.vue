@@ -8,11 +8,11 @@
               <div class="text-xs font-bold uppercase tracking-[0.35em] text-brand">My Center</div>
               <h1 class="mt-4 text-4xl font-bold text-slate-900">我的</h1>
               <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
-                这里恢复为更完整的个人中心层级，集中查看我的资料、帖子、回复、获赞与头衔状态。
+                这里集中查看我的资料、帖子、回复和获赞表现。答疑头衔只会在达标后出现，不再默认发放。
               </p>
             </div>
             <div class="flex flex-wrap gap-3">
-              <el-button class="!border-brand/15 !text-brand" :loading="loading.summary || loading.posts || loading.replies || loading.likes" @click="reloadAll">
+              <el-button class="!border-brand/15 !text-brand" :loading="loading.summary || loading.posts || loading.replies || loading.likes || loading.likedItems" @click="reloadAll">
                 刷新数据
               </el-button>
               <el-button class="!border-brand/15 !text-brand" @click="openAvatarDialog">修改头像</el-button>
@@ -34,12 +34,14 @@
                 <div class="min-w-0 flex-1">
                   <div class="flex flex-wrap items-center gap-3">
                     <div class="text-3xl font-bold text-slate-900">{{ summary?.nickname || currentUser.nickname }}</div>
-                    <span class="rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
-                      {{ summary?.title || '新生伙伴' }}
+                    <span
+                      class="rounded-full px-3 py-1 text-xs font-semibold"
+                      :class="summary?.title ? 'bg-brand/10 text-brand' : 'bg-slate-100 text-slate-400'"
+                    >
+                      {{ summary?.title || '暂无头衔' }}
                     </span>
                   </div>
                   <div class="mt-2 text-sm text-slate-500">账号：{{ summary?.username || currentUser.username }}</div>
-                  <div class="mt-1 text-sm text-slate-500">角色：{{ currentUserRoleLabel }}</div>
                   <div class="mt-1 text-sm text-slate-500">
                     {{ summary?.collegeName || '未填写学院' }} / {{ summary?.majorName || '未填写专业' }}
                   </div>
@@ -47,7 +49,7 @@
               </div>
 
               <div class="mt-6 rounded-[24px] bg-white/85 p-5 text-sm leading-7 text-slate-500">
-                {{ summary?.bio || '暂未填写个人简介。建议补充你的学院、方向和擅长回答的话题，便于后续申请答疑奖励。' }}
+                {{ summary?.bio || '暂未填写个人简介。建议补充你的学院、方向和擅长回答的话题，方便大家快速了解你。' }}
               </div>
 
               <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -61,25 +63,43 @@
 
             <div class="grid gap-4 md:grid-cols-2">
               <div class="rounded-[24px] bg-[linear-gradient(180deg,#f8fafc_0%,#fff_100%)] p-5 shadow-soft">
-                <div class="text-base font-semibold text-slate-900">奖励资格</div>
+                <div class="text-base font-semibold text-slate-900">社区表现</div>
                 <div class="mt-3 text-sm leading-7 text-slate-500">
-                  {{ likesData?.rewardHint || '继续参与讨论并积累高质量回答。' }}
+                  持续参与答疑、积累获赞和知识贡献后，系统会按规则展示相应答疑头衔。
                 </div>
                 <div class="mt-4">
-                  <span
-                    class="rounded-full px-3 py-1 text-xs font-semibold"
-                    :class="likesData?.rewardEligible ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'"
-                  >
-                    {{ likesData?.rewardEligible ? '可申请奖励' : '暂未达标' }}
+                  <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                    以头衔与积分为主
                   </span>
                 </div>
               </div>
 
               <div class="rounded-[24px] bg-[linear-gradient(180deg,#f8fafc_0%,#fff_100%)] p-5 shadow-soft">
-                <div class="text-base font-semibold text-slate-900">答疑头衔</div>
-                <div class="mt-3 text-2xl font-bold text-slate-900">{{ summary?.title || '新生伙伴' }}</div>
+                <div class="flex items-center gap-2">
+                  <div class="text-base font-semibold text-slate-900">答疑头衔</div>
+                  <el-popover placement="bottom-start" :width="320" trigger="click">
+                    <template #reference>
+                      <button
+                        type="button"
+                        class="inline-flex items-center rounded-full border border-brand/15 bg-brand/5 px-2.5 py-1 text-[11px] font-semibold text-brand transition hover:bg-brand/10"
+                      >
+                        规则
+                      </button>
+                    </template>
+                    <div class="space-y-3">
+                      <div class="text-sm font-semibold text-slate-900">答疑头衔获取标准</div>
+                      <div class="space-y-2 text-sm leading-6 text-slate-600">
+                        <div><span class="font-semibold text-slate-900">热心答主：</span>累计获赞 30+，或累计高质量回复 20+。</div>
+                        <div><span class="font-semibold text-slate-900">知识共建者：</span>知识贡献 3+，或精选回答 2+。</div>
+                        <div><span class="font-semibold text-slate-900">高赞答主：</span>累计获赞 80+，或精选回答 5+。</div>
+                        <div class="text-xs text-slate-400">未达到任一门槛前，默认不授予头衔。</div>
+                      </div>
+                    </div>
+                  </el-popover>
+                </div>
+                <div class="mt-3 text-2xl font-bold text-slate-900">{{ summary?.title || '暂未获得' }}</div>
                 <div class="mt-2 text-sm leading-7 text-slate-500">
-                  根据获赞、精选回答和知识贡献自动评定，后续可继续接管理员审核奖励。
+                  只有达到答疑门槛后才会获得头衔，未达标阶段默认不展示头衔。
                 </div>
               </div>
 
@@ -95,7 +115,7 @@
                 <div class="text-base font-semibold text-slate-900">账号状态</div>
                 <div class="mt-3 text-sm leading-7 text-slate-500">
                   {{ summary?.status === 1 ? '正常使用' : '当前受限' }}<br />
-                  奖励通过：{{ likesData?.rewardPassedCount || 0 }} 次
+                  头衔状态：{{ summary?.title || '暂未获得' }}
                 </div>
               </div>
             </div>
@@ -125,6 +145,18 @@
                   <div v-if="!loading.posts && !myPosts.length" class="rounded-[20px] bg-white p-6 text-sm text-slate-500">
                     你还没有发布帖子。
                   </div>
+                  <div class="flex justify-end">
+                    <el-pagination
+                      background
+                      layout="total, sizes, prev, pager, next"
+                      :current-page="postPagination.pageNum"
+                      :page-size="postPagination.pageSize"
+                      :page-sizes="PAGE_SIZE_OPTIONS"
+                      :total="postPagination.total"
+                      @current-change="loadPosts"
+                      @size-change="handlePostPageSizeChange"
+                    />
+                  </div>
                 </div>
               </el-tab-pane>
 
@@ -152,6 +184,71 @@
                   <div v-if="!loading.replies && !myReplies.length" class="rounded-[20px] bg-white p-6 text-sm text-slate-500">
                     你还没有发表回复。
                   </div>
+                  <div class="flex justify-end">
+                    <el-pagination
+                      background
+                      layout="total, sizes, prev, pager, next"
+                      :current-page="replyPagination.pageNum"
+                      :page-size="replyPagination.pageSize"
+                      :page-sizes="PAGE_SIZE_OPTIONS"
+                      :total="replyPagination.total"
+                      @current-change="loadReplies"
+                      @size-change="handleReplyPageSizeChange"
+                    />
+                  </div>
+                </div>
+              </el-tab-pane>
+
+              <el-tab-pane label="我的点赞" name="likedItems">
+                <div class="space-y-4">
+                  <div v-for="item in myLikedItems" :key="`${item.targetType}-${item.targetId}`" class="rounded-[24px] bg-white p-5 shadow-soft">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                          <span
+                            class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                            :class="item.targetType === 'POST' ? 'bg-brand/10 text-brand' : 'bg-slate-100 text-slate-600'"
+                          >
+                            {{ item.targetType === 'POST' ? '点赞的帖子' : '点赞的回复' }}
+                          </span>
+                          <div class="truncate text-sm font-semibold text-slate-900">
+                            {{ item.targetTitle || '内容已不可见' }}
+                          </div>
+                        </div>
+                        <div class="mt-2 text-xs text-slate-400">
+                          点赞于 {{ formatTime(item.likedAt) }} · {{ itemStatusLabel(item.status, item.visibility) }}
+                        </div>
+                        <div class="mt-3 text-sm leading-7 text-slate-600">
+                          {{ item.contentPreview || '暂无内容摘要。' }}
+                        </div>
+                        <div v-if="item.postTitle" class="mt-3 text-xs text-slate-500">
+                          所在帖子：{{ item.postTitle }}
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <div class="rounded-[18px] bg-slate-50 px-4 py-3 text-center">
+                          <div class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">当前总赞</div>
+                          <div class="mt-2 text-2xl font-bold text-slate-900">{{ item.likeCount || 0 }}</div>
+                        </div>
+                        <el-button class="!border-brand/15 !text-brand" @click="goToPost(item.postId)">查看原帖</el-button>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="!loading.likedItems && !myLikedItems.length" class="rounded-[20px] bg-white p-6 text-sm text-slate-500">
+                    你还没有点赞过帖子或回复。
+                  </div>
+                  <div class="flex justify-end">
+                    <el-pagination
+                      background
+                      layout="total, sizes, prev, pager, next"
+                      :current-page="likedPagination.pageNum"
+                      :page-size="likedPagination.pageSize"
+                      :page-sizes="PAGE_SIZE_OPTIONS"
+                      :total="likedPagination.total"
+                      @current-change="loadLikedItems"
+                      @size-change="handleLikedPageSizeChange"
+                    />
+                  </div>
                 </div>
               </el-tab-pane>
 
@@ -172,6 +269,79 @@
                   <div class="rounded-[24px] bg-white p-5 shadow-soft">
                     <div class="text-sm font-semibold text-slate-900">知识贡献</div>
                     <div class="mt-3 text-3xl font-bold text-slate-900">{{ likesData?.knowledgeContributionCount || 0 }}</div>
+                  </div>
+                  <div class="rounded-[24px] bg-white p-5 shadow-soft lg:col-span-2">
+                    <div class="text-sm font-semibold text-slate-900">当前成长参考</div>
+                    <div class="mt-3 text-sm leading-7 text-slate-600">
+                      持续积累获赞、精选回答和知识贡献后，可逐步达到更高层级的答疑头衔。
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-5 rounded-[24px] bg-white p-5 shadow-soft">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div class="text-base font-semibold text-slate-900">获赞明细</div>
+                      <div class="mt-1 text-sm text-slate-500">按点赞数优先展示你的高反馈帖子和回复，便于快速回看高价值内容。</div>
+                    </div>
+                    <el-button
+                      class="!border-brand/15 !text-brand"
+                      :loading="loading.likeDetails"
+                      @click="loadLikeDetails(likeDetailPagination.pageNum)"
+                    >
+                      刷新明细
+                    </el-button>
+                  </div>
+
+                  <div class="mt-4 space-y-4">
+                    <div v-for="item in likeDetails" :key="`${item.targetType}-${item.targetId}`" class="rounded-[20px] border border-slate-100 p-4">
+                      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div class="min-w-0">
+                          <div class="flex flex-wrap items-center gap-2">
+                            <span
+                              class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                              :class="item.targetType === 'POST' ? 'bg-brand/10 text-brand' : 'bg-slate-100 text-slate-600'"
+                            >
+                              {{ item.targetType === 'POST' ? '帖子' : '回复' }}
+                            </span>
+                            <div class="truncate text-sm font-semibold text-slate-900">
+                              {{ item.targetTitle || '未命名内容' }}
+                            </div>
+                          </div>
+                          <div class="mt-2 text-xs text-slate-400">
+                            {{ formatTime(item.createdAt) }} · {{ itemStatusLabel(item.status, item.visibility) }}
+                          </div>
+                          <div class="mt-3 line-clamp-3 text-sm leading-7 text-slate-600">
+                            {{ item.contentPreview || '暂无内容摘要。' }}
+                          </div>
+                          <div v-if="item.postTitle" class="mt-3 text-xs text-slate-500">
+                            所在帖子：{{ item.postTitle }}
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                          <div class="rounded-[18px] bg-slate-50 px-4 py-3 text-center">
+                            <div class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">获赞</div>
+                            <div class="mt-2 text-2xl font-bold text-slate-900">{{ item.likeCount || 0 }}</div>
+                          </div>
+                          <el-button class="!border-brand/15 !text-brand" @click="goToPost(item.postId)">查看原帖</el-button>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-if="!loading.likeDetails && !likeDetails.length" class="rounded-[20px] bg-slate-50 p-6 text-sm text-slate-500">
+                      你目前还没有获赞明细，先去论坛参与发帖或答疑吧。
+                    </div>
+                  </div>
+
+                  <div class="mt-5 flex justify-end">
+                    <el-pagination
+                      background
+                      layout="total, sizes, prev, pager, next"
+                      :current-page="likeDetailPagination.pageNum"
+                      :page-size="likeDetailPagination.pageSize"
+                      :page-sizes="PAGE_SIZE_OPTIONS"
+                      :total="likeDetailPagination.total"
+                      @current-change="loadLikeDetails"
+                      @size-change="handleLikeDetailPageSizeChange"
+                    />
                   </div>
                 </div>
               </el-tab-pane>
@@ -246,14 +416,17 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import MainLayout from '../layouts/MainLayout.vue'
-import { fetchMyLikes, fetchMyPosts, fetchMyReplies, fetchMySummary, updateMyAvatar, updateMyProfile } from '../api/me'
+import { fetchMyLikeDetails, fetchMyLikedItems, fetchMyLikes, fetchMyPosts, fetchMyReplies, fetchMySummary, updateMyAvatar, updateMyProfile } from '../api/me'
 import { useAppShell } from '../stores/appShell'
 
 const router = useRouter()
-const { currentUser, currentUserRoleLabel, ensureShellReady, openAuth, refreshCurrentUser } = useAppShell()
+const { currentUser, ensureShellReady, openAuth, refreshCurrentUser } = useAppShell()
+const PAGE_SIZE_OPTIONS = [5, 10, 20]
 const activeTab = ref('posts')
 const summary = ref(null)
 const likesData = ref(null)
+const likeDetails = ref([])
+const myLikedItems = ref([])
 const myPosts = ref([])
 const myReplies = ref([])
 const profileDialogVisible = ref(false)
@@ -262,7 +435,29 @@ const loading = reactive({
   summary: false,
   posts: false,
   replies: false,
-  likes: false
+  likes: false,
+  likedItems: false,
+  likeDetails: false
+})
+const likeDetailPagination = reactive({
+  pageNum: 1,
+  pageSize: 5,
+  total: 0
+})
+const postPagination = reactive({
+  pageNum: 1,
+  pageSize: 5,
+  total: 0
+})
+const replyPagination = reactive({
+  pageNum: 1,
+  pageSize: 5,
+  total: 0
+})
+const likedPagination = reactive({
+  pageNum: 1,
+  pageSize: 5,
+  total: 0
 })
 const profileSubmitting = ref(false)
 const avatarSubmitting = ref(false)
@@ -279,10 +474,10 @@ const avatarForm = reactive({
 })
 
 const statCards = computed(() => [
-  { label: '积分', value: summary.value?.points || 0, tip: '社区积分与后台奖励直接挂钩' },
+  { label: '积分', value: summary.value?.points || 0, tip: '积分可反映你的社区活跃度与贡献度' },
   { label: '帖子', value: summary.value?.postCount || 0, tip: '我发出的主贴数量' },
   { label: '回复', value: summary.value?.replyCount || 0, tip: '我参与答疑的回复数量' },
-  { label: '获赞', value: summary.value?.totalLikeReceivedCount || 0, tip: '帖子与回复累计获赞' }
+  { label: '获赞', value: summary.value?.totalLikeReceivedCount || 0, tip: '当前数据库中的帖子与回复累计获赞' }
 ])
 
 function genderLabel(value) {
@@ -316,7 +511,12 @@ function replyStatusLabel(reply) {
   return `${reply.status === 1 ? '正常' : '受限'} / ${reply.visibility === 1 ? '可见' : '隐藏'}`
 }
 
+function itemStatusLabel(status, visibility) {
+  return `${status === 1 ? '正常' : '受限'} / ${visibility === 1 ? '可见' : '隐藏'}`
+}
+
 function goToPost(postId) {
+  if (!postId) return
   router.push(`/forum/${postId}`)
 }
 
@@ -347,11 +547,14 @@ async function loadSummary() {
   }
 }
 
-async function loadPosts() {
+async function loadPosts(pageNum = postPagination.pageNum) {
   loading.posts = true
   try {
-    const page = await fetchMyPosts({ pageNum: 1, pageSize: 8 })
+    const page = await fetchMyPosts({ pageNum, pageSize: postPagination.pageSize })
     myPosts.value = page.records || []
+    postPagination.pageNum = page.pageNum || pageNum
+    postPagination.pageSize = page.pageSize || postPagination.pageSize
+    postPagination.total = page.total || 0
   } catch (error) {
     ElMessage.error(error.message)
   } finally {
@@ -359,15 +562,33 @@ async function loadPosts() {
   }
 }
 
-async function loadReplies() {
+async function loadReplies(pageNum = replyPagination.pageNum) {
   loading.replies = true
   try {
-    const page = await fetchMyReplies({ pageNum: 1, pageSize: 8 })
+    const page = await fetchMyReplies({ pageNum, pageSize: replyPagination.pageSize })
     myReplies.value = page.records || []
+    replyPagination.pageNum = page.pageNum || pageNum
+    replyPagination.pageSize = page.pageSize || replyPagination.pageSize
+    replyPagination.total = page.total || 0
   } catch (error) {
     ElMessage.error(error.message)
   } finally {
     loading.replies = false
+  }
+}
+
+async function loadLikedItems(pageNum = likedPagination.pageNum) {
+  loading.likedItems = true
+  try {
+    const page = await fetchMyLikedItems({ pageNum, pageSize: likedPagination.pageSize })
+    myLikedItems.value = page.records || []
+    likedPagination.pageNum = page.pageNum || pageNum
+    likedPagination.pageSize = page.pageSize || likedPagination.pageSize
+    likedPagination.total = page.total || 0
+  } catch (error) {
+    ElMessage.error(error.message)
+  } finally {
+    loading.likedItems = false
   }
 }
 
@@ -382,9 +603,44 @@ async function loadLikes() {
   }
 }
 
+async function loadLikeDetails(pageNum = 1) {
+  loading.likeDetails = true
+  try {
+    const page = await fetchMyLikeDetails({ pageNum, pageSize: likeDetailPagination.pageSize })
+    likeDetails.value = page.records || []
+    likeDetailPagination.pageNum = page.pageNum || pageNum
+    likeDetailPagination.pageSize = page.pageSize || likeDetailPagination.pageSize
+    likeDetailPagination.total = page.total || 0
+  } catch (error) {
+    ElMessage.error(error.message)
+  } finally {
+    loading.likeDetails = false
+  }
+}
+
 async function reloadAll() {
   if (!currentUser.value) return
-  await Promise.all([loadSummary(), loadPosts(), loadReplies(), loadLikes()])
+  await Promise.all([loadSummary(), loadPosts(1), loadReplies(1), loadLikedItems(1), loadLikes(), loadLikeDetails(1)])
+}
+
+function handlePostPageSizeChange(pageSize) {
+  postPagination.pageSize = pageSize
+  loadPosts(1)
+}
+
+function handleReplyPageSizeChange(pageSize) {
+  replyPagination.pageSize = pageSize
+  loadReplies(1)
+}
+
+function handleLikedPageSizeChange(pageSize) {
+  likedPagination.pageSize = pageSize
+  loadLikedItems(1)
+}
+
+function handleLikeDetailPageSizeChange(pageSize) {
+  likeDetailPagination.pageSize = pageSize
+  loadLikeDetails(1)
 }
 
 async function submitProfile() {
@@ -440,8 +696,18 @@ watch(
     if (!nextId) {
       summary.value = null
       likesData.value = null
+      likeDetails.value = []
+      myLikedItems.value = []
       myPosts.value = []
       myReplies.value = []
+      postPagination.pageNum = 1
+      postPagination.total = 0
+      replyPagination.pageNum = 1
+      replyPagination.total = 0
+      likedPagination.pageNum = 1
+      likedPagination.total = 0
+      likeDetailPagination.pageNum = 1
+      likeDetailPagination.total = 0
     }
   }
 )

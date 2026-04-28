@@ -17,6 +17,7 @@ import com.example.collegefreshmanhelper.user.entity.UserStats;
 import com.example.collegefreshmanhelper.user.service.UserService;
 import com.example.collegefreshmanhelper.user.service.UserStatsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,10 +34,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost> implements ForumPostService {
 
+    private static final long VIEW_DEDUP_HOURS = 12L;
+    private static final String POST_VIEW_USER_KEY_PREFIX = "forum:view:post:user:";
+
     private final ForumPostImageServiceImpl forumPostImageService;
     private final ForumLikeService forumLikeService;
     private final UserService userService;
     private final UserStatsService userStatsService;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -87,7 +93,7 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
         if (post == null) {
             throw new BusinessException("帖子不存在");
         }
-        if (incrementView) {
+        if (shouldIncrementView(postId, currentUserId, incrementView)) {
             lambdaUpdate()
                     .eq(ForumPost::getId, postId)
                     .setSql("view_count = IFNULL(view_count, 0) + 1")
@@ -216,6 +222,22 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
 
     private int defaultZero(Integer value) {
         return value == null ? 0 : value;
+    }
+
+    private boolean shouldIncrementView(Long postId, Long currentUserId, boolean incrementView) {
+        if (!incrementView) {
+            return false;
+        }
+        if (currentUserId == null) {
+            return true;
+        }
+        String key = postViewUserKey(postId, currentUserId);
+        Boolean firstVisit = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", VIEW_DEDUP_HOURS, TimeUnit.HOURS);
+        return Boolean.TRUE.equals(firstVisit);
+    }
+
+    private String postViewUserKey(Long postId, Long userId) {
+        return POST_VIEW_USER_KEY_PREFIX + postId + ":" + userId;
     }
 
     private String stripHtml(String value) {

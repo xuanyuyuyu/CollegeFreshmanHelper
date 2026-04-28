@@ -22,7 +22,5 @@ public class UserStats extends BaseEntity {
     private Integer postLikeReceivedCount;
     private Integer knowledgeContributionCount;
     private Integer featuredAnswerCount;
-    private Integer rewardAppliedCount;
-    private Integer rewardPassedCount;
     private LocalDateTime lastCalculatedAt;
 }

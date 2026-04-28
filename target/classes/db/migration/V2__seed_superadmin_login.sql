@@ -44,15 +44,11 @@ INSERT INTO `user_stats` (
   `post_like_received_count`,
   `knowledge_contribution_count`,
   `featured_answer_count`,
-  `reward_applied_count`,
-  `reward_passed_count`,
   `last_calculated_at`,
   `created_at`,
   `updated_at`
 ) VALUES (
   1000000000000000001,
-  0,
-  0,
   0,
   0,
   0,

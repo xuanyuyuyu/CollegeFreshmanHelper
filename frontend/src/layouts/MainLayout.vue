@@ -13,7 +13,7 @@
         </RouterLink>
 
         <nav class="hidden items-center gap-1 rounded-2xl bg-slate-100/75 p-1.5 lg:flex">
-          <template v-for="item in navItems" :key="item.label">
+          <template v-for="item in visibleNavItems" :key="item.label">
             <a
               v-if="item.href"
               :href="item.href"
@@ -118,7 +118,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useAppShell } from '../stores/appShell'
 
@@ -127,9 +127,10 @@ const navItems = [
   { to: '/', label: '首页' },
   { to: '/assistant', label: '智能问答' },
   { to: '/forum', label: '论坛交流' },
-  { href: 'https://www.720yun.com/t/2avktm1qs2m', label: '全景校园' },
+  { href: 'https://www.720yun.com/t/2avktm1qs2m?scene_id=75861491', label: '全景校园' },
   { to: '/guide', label: '入学指南' },
-  { to: '/me', label: '我的' }
+  { to: '/me', label: '我的' },
+  { to: '/admin', label: '后台管理', adminOnly: true }
 ]
 
 const {
@@ -147,6 +148,10 @@ const {
   submitRegister,
   handleLogout
 } = useAppShell()
+
+const visibleNavItems = computed(() =>
+  navItems.filter((item) => !item.adminOnly || [8, 9].includes(currentUser.value?.role))
+)
 
 onMounted(async () => {
   await ensureShellReady()

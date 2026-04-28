@@ -8,6 +8,8 @@ import com.example.collegefreshmanhelper.user.dto.UserAvatarUpdateRequest;
 import com.example.collegefreshmanhelper.user.dto.UserProfileUpdateRequest;
 import com.example.collegefreshmanhelper.user.service.MyCenterService;
 import com.example.collegefreshmanhelper.user.vo.MyCenterLikeVO;
+import com.example.collegefreshmanhelper.user.vo.MyCenterLikeDetailVO;
+import com.example.collegefreshmanhelper.user.vo.MyCenterLikedItemVO;
 import com.example.collegefreshmanhelper.user.vo.MyCenterPostVO;
 import com.example.collegefreshmanhelper.user.vo.MyCenterReplyVO;
 import com.example.collegefreshmanhelper.user.vo.MyCenterSummaryVO;
@@ -50,6 +52,20 @@ public class MyCenterController {
     @GetMapping("/likes")
     public ApiResponse<MyCenterLikeVO> likes() {
         return ApiResponse.success(myCenterService.getLikeStats(LoginUserContext.getCurrentUserId()));
+    }
+
+    @GetMapping("/likes/details")
+    public ApiResponse<PageResult<MyCenterLikeDetailVO>> likeDetails(
+            @RequestParam(defaultValue = "1") long pageNum,
+            @RequestParam(defaultValue = "10") long pageSize) {
+        return ApiResponse.success(myCenterService.pageMyLikeDetails(LoginUserContext.getCurrentUserId(), pageNum, pageSize));
+    }
+
+    @GetMapping("/liked-items")
+    public ApiResponse<PageResult<MyCenterLikedItemVO>> likedItems(
+            @RequestParam(defaultValue = "1") long pageNum,
+            @RequestParam(defaultValue = "10") long pageSize) {
+        return ApiResponse.success(myCenterService.pageMyLikedItems(LoginUserContext.getCurrentUserId(), pageNum, pageSize));
     }
 
     @PutMapping("/profile")

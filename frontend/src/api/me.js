@@ -16,6 +16,14 @@ export function fetchMyLikes() {
   return http.get('/api/users/me/likes')
 }
 
+export function fetchMyLikeDetails(params) {
+  return http.get('/api/users/me/likes/details', { params })
+}
+
+export function fetchMyLikedItems(params) {
+  return http.get('/api/users/me/liked-items', { params })
+}
+
 export function updateMyProfile(payload) {
   return http.put('/api/users/me/profile', payload)
 }
