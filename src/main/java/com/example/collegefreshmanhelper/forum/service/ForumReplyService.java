@@ -11,5 +11,5 @@ public interface ForumReplyService extends IService<ForumReply> {
 
     ForumReply createReply(Long postId, Long currentUserId, ForumReplyCreateRequest request);
 
-    List<ForumReplyThreadVO> listPublishedRepliesByPostId(Long postId);
+    List<ForumReplyThreadVO> listPublishedRepliesByPostId(Long postId, Long currentUserId);
 }

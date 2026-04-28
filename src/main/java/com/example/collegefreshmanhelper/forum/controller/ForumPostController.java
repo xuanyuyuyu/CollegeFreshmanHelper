@@ -6,10 +6,14 @@ import com.example.collegefreshmanhelper.common.model.PageResult;
 import com.example.collegefreshmanhelper.common.util.LoginUserContext;
 import com.example.collegefreshmanhelper.forum.dto.ForumPostCreateRequest;
 import com.example.collegefreshmanhelper.forum.entity.ForumPost;
+import com.example.collegefreshmanhelper.forum.service.ForumLikeService;
 import com.example.collegefreshmanhelper.forum.service.ForumPostService;
 import com.example.collegefreshmanhelper.forum.vo.ForumPostDetailVO;
+import com.example.collegefreshmanhelper.forum.vo.ForumPostSummaryVO;
+import com.example.collegefreshmanhelper.forum.vo.LikeToggleVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ForumPostController {
 
     private final ForumPostService forumPostService;
+    private final ForumLikeService forumLikeService;
 
     @SaCheckLogin
     @PostMapping
@@ -32,14 +37,29 @@ public class ForumPostController {
     }
 
     @GetMapping("/{postId}")
-    public ApiResponse<ForumPostDetailVO> getPostDetail(@PathVariable Long postId) {
-        return ApiResponse.success(forumPostService.getPostDetail(postId));
+    public ApiResponse<ForumPostDetailVO> getPostDetail(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "true") boolean incrementView) {
+        return ApiResponse.success(forumPostService.getPostDetail(postId, incrementView, LoginUserContext.getCurrentUserIdOrNull()));
     }
 
     @GetMapping("/page")
-    public ApiResponse<PageResult<ForumPost>> pagePublishedPosts(
+    public ApiResponse<PageResult<ForumPostSummaryVO>> pagePublishedPosts(
             @RequestParam(defaultValue = "1") long pageNum,
-            @RequestParam(defaultValue = "10") long pageSize) {
-        return ApiResponse.success(PageResult.of(forumPostService.pagePublishedPosts(pageNum, pageSize)));
+            @RequestParam(defaultValue = "10") long pageSize,
+            @RequestParam(defaultValue = "latest") String sortType) {
+        return ApiResponse.success(PageResult.of(forumPostService.pagePublishedPosts(pageNum, pageSize, sortType, LoginUserContext.getCurrentUserIdOrNull())));
+    }
+
+    @SaCheckLogin
+    @PostMapping("/{postId}/like")
+    public ApiResponse<LikeToggleVO> likePost(@PathVariable Long postId) {
+        return ApiResponse.success(forumLikeService.likePost(postId, LoginUserContext.getCurrentUserId()));
+    }
+
+    @SaCheckLogin
+    @DeleteMapping("/{postId}/like")
+    public ApiResponse<LikeToggleVO> unlikePost(@PathVariable Long postId) {
+        return ApiResponse.success(forumLikeService.unlikePost(postId, LoginUserContext.getCurrentUserId()));
     }
 }

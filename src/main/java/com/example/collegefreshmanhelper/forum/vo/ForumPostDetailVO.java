@@ -11,5 +11,7 @@ import java.util.List;
 public class ForumPostDetailVO {
 
     private ForumPost post;
+    private ForumAuthorVO author;
+    private Boolean liked;
     private List<String> imageUrls;
 }

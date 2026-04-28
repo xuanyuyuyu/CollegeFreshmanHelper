@@ -19,4 +19,16 @@ public final class LoginUserContext {
             throw new BusinessException("登录态异常");
         }
     }
+
+    public static Long getCurrentUserIdOrNull() {
+        Object loginId = StpUtil.getLoginIdDefaultNull();
+        if (loginId == null) {
+            return null;
+        }
+        try {
+            return Long.valueOf(String.valueOf(loginId));
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+    }
 }
