@@ -13,12 +13,14 @@ public class ForumReplyVO {
     private String userNickname;
     private String userAvatarUrl;
     private String userTitle;
+    private Boolean userCustomTitle;
     private Boolean postAuthor;
     private Long parentId;
     private Long replyToReplyId;
     private Long replyToUserId;
     private String replyToUserNickname;
     private String replyToUserTitle;
+    private Boolean replyToUserCustomTitle;
     private String content;
     private Integer contentType;
     private String imageUrl;

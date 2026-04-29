@@ -2,6 +2,8 @@ package com.example.collegefreshmanhelper.user.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class MyCenterSummaryVO {
 
@@ -23,4 +25,5 @@ public class MyCenterSummaryVO {
     private Integer knowledgeContributionCount;
     private Integer featuredAnswerCount;
     private String title;
+    private List<UserTitleRuleVO> titleRules;
 }

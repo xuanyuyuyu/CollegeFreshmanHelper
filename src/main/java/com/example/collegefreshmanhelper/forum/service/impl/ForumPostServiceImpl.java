@@ -18,6 +18,8 @@ import com.example.collegefreshmanhelper.user.entity.SysUser;
 import com.example.collegefreshmanhelper.user.entity.UserStats;
 import com.example.collegefreshmanhelper.user.service.UserService;
 import com.example.collegefreshmanhelper.user.service.UserStatsService;
+import com.example.collegefreshmanhelper.user.service.UserTitleDisplayService;
+import com.example.collegefreshmanhelper.user.service.UserTitleMetrics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,7 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
     private final ForumLikeService forumLikeService;
     private final UserService userService;
     private final UserStatsService userStatsService;
+    private final UserTitleDisplayService userTitleDisplayService;
     private final StringRedisTemplate stringRedisTemplate;
 
     @Override
@@ -178,14 +181,16 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
         query.page(page);
         Map<Long, SysUser> userMap = loadUserMap(page.getRecords().stream().map(ForumPost::getUserId).collect(Collectors.toSet()));
         Map<Long, UserStats> statsMap = loadStatsMap(page.getRecords().stream().map(ForumPost::getUserId).collect(Collectors.toSet()));
+        Map<Long, UserTitleMetrics> metricsMap = userTitleDisplayService.buildMetricsMap(userMap.keySet(), statsMap);
+        Map<Long, String> titleMap = userTitleDisplayService.findWearingTitles(page.getRecords().stream().map(ForumPost::getUserId).collect(Collectors.toSet()));
         Map<Long, Boolean> likeStatusMap = forumLikeService.batchPostLikeStatus(page.getRecords().stream().map(ForumPost::getId).collect(Collectors.toSet()), currentUserId);
 
         Page<ForumPostSummaryVO> resultPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
-        resultPage.setRecords(page.getRecords().stream().map(post -> toSummaryVO(post, userMap, statsMap, likeStatusMap)).toList());
+        resultPage.setRecords(page.getRecords().stream().map(post -> toSummaryVO(post, userMap, metricsMap, titleMap, likeStatusMap)).toList());
         return resultPage;
     }
 
-    private ForumPostSummaryVO toSummaryVO(ForumPost post, Map<Long, SysUser> userMap, Map<Long, UserStats> statsMap, Map<Long, Boolean> likeStatusMap) {
+    private ForumPostSummaryVO toSummaryVO(ForumPost post, Map<Long, SysUser> userMap, Map<Long, UserTitleMetrics> metricsMap, Map<Long, String> titleMap, Map<Long, Boolean> likeStatusMap) {
         ForumPostSummaryVO summaryVO = new ForumPostSummaryVO();
         summaryVO.setId(post.getId());
         summaryVO.setTitle(post.getTitle());
@@ -199,27 +204,30 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
         summaryVO.setLiked(Boolean.TRUE.equals(likeStatusMap.get(post.getId())));
         summaryVO.setPublishedAt(post.getPublishedAt());
         summaryVO.setCreatedAt(post.getCreatedAt());
-        summaryVO.setAuthor(buildAuthor(post.getUserId(), userMap, statsMap));
+        summaryVO.setAuthor(buildAuthor(post.getUserId(), userMap, metricsMap, titleMap));
         return summaryVO;
     }
 
     private ForumAuthorVO buildAuthor(Long userId) {
         Map<Long, SysUser> userMap = loadUserMap(Collections.singleton(userId));
         Map<Long, UserStats> statsMap = loadStatsMap(Collections.singleton(userId));
-        return buildAuthor(userId, userMap, statsMap);
+        Map<Long, UserTitleMetrics> metricsMap = userTitleDisplayService.buildMetricsMap(Collections.singleton(userId), statsMap);
+        Map<Long, String> titleMap = userTitleDisplayService.findWearingTitles(Collections.singleton(userId));
+        return buildAuthor(userId, userMap, metricsMap, titleMap);
     }
 
-    private ForumAuthorVO buildAuthor(Long userId, Map<Long, SysUser> userMap, Map<Long, UserStats> statsMap) {
+    private ForumAuthorVO buildAuthor(Long userId, Map<Long, SysUser> userMap, Map<Long, UserTitleMetrics> metricsMap, Map<Long, String> titleMap) {
         SysUser user = userMap.get(userId);
-        UserStats stats = statsMap.get(userId);
+        String wearingTitle = titleMap.get(userId);
         if (user == null) {
-            return new ForumAuthorVO(userId, "匿名用户", null, "新生伙伴");
+            return new ForumAuthorVO(userId, "匿名用户", null, null, false);
         }
         return new ForumAuthorVO(
                 user.getId(),
                 user.getNickname(),
                 user.getAvatarUrl(),
-                resolveTitle(stats)
+                wearingTitle != null ? wearingTitle : userTitleDisplayService.resolveAutomaticTitle(metricsMap.get(userId)),
+                wearingTitle != null
         );
     }
 
@@ -237,31 +245,6 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
         }
         return userStatsService.listByIds(userIds).stream()
                 .collect(Collectors.toMap(UserStats::getUserId, Function.identity()));
-    }
-
-    private String resolveTitle(UserStats stats) {
-        if (stats == null) {
-            return "新生伙伴";
-        }
-        int postLikes = defaultZero(stats.getPostLikeReceivedCount());
-        int replyLikes = defaultZero(stats.getReplyLikeReceivedCount());
-        int totalLikes = postLikes + replyLikes;
-        int featuredAnswers = defaultZero(stats.getFeaturedAnswerCount());
-        int contributionCount = defaultZero(stats.getKnowledgeContributionCount());
-        int replyCount = defaultZero(stats.getReplyCount());
-        if (featuredAnswers >= 5 || totalLikes >= 80) {
-            return "高赞答主";
-        }
-        if (contributionCount >= 3 || featuredAnswers >= 2) {
-            return "知识共建者";
-        }
-        if (replyCount >= 15 || totalLikes >= 20) {
-            return "热心学长";
-        }
-        if (totalLikes >= 5) {
-            return "活跃伙伴";
-        }
-        return "新生伙伴";
     }
 
     private int defaultZero(Integer value) {

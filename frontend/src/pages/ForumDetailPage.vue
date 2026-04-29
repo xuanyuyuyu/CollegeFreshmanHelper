@@ -23,7 +23,11 @@
                 <div class="text-[22px] font-bold tracking-tight text-slate-900 sm:text-2xl">
                   {{ postDetail.author?.nickname || '匿名用户' }}
                 </div>
-                <span v-if="postDetail.author?.title" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                <span
+                  v-if="postDetail.author?.title"
+                  class="rounded-full px-3 py-1 text-xs font-semibold"
+                  :class="titleBadgeClass(postDetail.author.title)"
+                >
                   {{ postDetail.author.title }}
                 </span>
                 <span v-if="postDetail.post.tags" class="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">
@@ -125,6 +129,13 @@
                     <div class="text-[20px] font-bold tracking-tight text-slate-900">
                       {{ thread.rootReply.userNickname || `用户${thread.rootReply.userId}` }}
                     </div>
+                    <span
+                      v-if="thread.rootReply.userTitle"
+                      class="rounded-full px-3 py-1 text-xs font-semibold"
+                      :class="titleBadgeClass(thread.rootReply.userTitle)"
+                    >
+                      {{ thread.rootReply.userTitle }}
+                    </span>
                     <span v-if="thread.rootReply.postAuthor" class="rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white">楼主</span>
                     <span class="rounded-full bg-brand/8 px-3 py-1 text-xs font-semibold text-brand">第{{ index + 1 }}楼</span>
                     <span class="text-sm text-slate-400">{{ formatTime(thread.rootReply.createdAt) }}</span>
@@ -207,6 +218,13 @@
                               <div class="text-[15px] font-semibold text-slate-800">
                                 {{ child.userNickname || `用户${child.userId}` }}
                               </div>
+                              <span
+                                v-if="child.userTitle"
+                                class="rounded-full px-3 py-1 text-[11px] font-semibold"
+                                :class="titleBadgeClass(child.userTitle)"
+                              >
+                                {{ child.userTitle }}
+                              </span>
                               <span v-if="child.postAuthor" class="rounded-full bg-brand px-3 py-1 text-[11px] font-semibold text-white">楼主</span>
                               <span class="text-xs text-slate-400">{{ formatTime(child.createdAt) }}</span>
                             </div>
@@ -295,6 +313,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import MainLayout from '../layouts/MainLayout.vue'
 import { createReply, deletePost, deleteReply, fetchPostDetail, fetchPostReplies, likePost, likeReply, unlikePost, unlikeReply } from '../api/forum'
 import { useAppShell } from '../stores/appShell'
+import { titleBadgeClass } from '../utils/titleBadge'
 
 const route = useRoute()
 const router = useRouter()

@@ -13,4 +13,5 @@ public class ForumAuthorVO {
     private String nickname;
     private String avatarUrl;
     private String title;
+    private Boolean customTitle;
 }

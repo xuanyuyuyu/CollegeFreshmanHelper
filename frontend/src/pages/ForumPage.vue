@@ -64,7 +64,11 @@
                         <div class="text-[15px] font-semibold text-slate-700">
                           {{ post.author?.nickname || '匿名用户' }}
                         </div>
-                        <span v-if="post.author?.title" class="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">
+                        <span
+                          v-if="post.author?.title"
+                          class="rounded-full px-3 py-1 text-[11px] font-semibold"
+                          :class="titleBadgeClass(post.author.title)"
+                        >
                           {{ post.author.title }}
                         </span>
                         <span v-if="post.tags" class="rounded-full bg-brand/8 px-3 py-1 text-[11px] font-semibold text-brand">
@@ -187,6 +191,7 @@ import { ElMessage } from 'element-plus'
 import MainLayout from '../layouts/MainLayout.vue'
 import { createPost, fetchPostPage, likePost, unlikePost } from '../api/forum'
 import { useAppShell } from '../stores/appShell'
+import { titleBadgeClass } from '../utils/titleBadge'
 
 const router = useRouter()
 const composerRef = ref(null)

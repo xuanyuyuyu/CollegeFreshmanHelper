@@ -8,7 +8,7 @@
               <div class="text-xs font-bold uppercase tracking-[0.35em] text-brand">My Center</div>
               <h1 class="mt-4 text-4xl font-bold text-slate-900">我的</h1>
               <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
-                这里集中查看我的资料、帖子、回复和获赞表现。答疑头衔只会在达标后出现，不再默认发放。
+                这里集中查看我的资料、帖子、回复和获赞表现，也会展示你当前佩戴中的头衔。
               </p>
             </div>
             <div class="flex flex-wrap gap-3">
@@ -36,7 +36,7 @@
                     <div class="text-3xl font-bold text-slate-900">{{ summary?.nickname || currentUser.nickname }}</div>
                     <span
                       class="rounded-full px-3 py-1 text-xs font-semibold"
-                      :class="summary?.title ? 'bg-brand/10 text-brand' : 'bg-slate-100 text-slate-400'"
+                      :class="titleBadgeClass(summary?.title)"
                     >
                       {{ summary?.title || '暂无头衔' }}
                     </span>
@@ -65,7 +65,7 @@
               <div class="rounded-[24px] bg-[linear-gradient(180deg,#f8fafc_0%,#fff_100%)] p-5 shadow-soft">
                 <div class="text-base font-semibold text-slate-900">社区表现</div>
                 <div class="mt-3 text-sm leading-7 text-slate-500">
-                  持续参与答疑、积累获赞和知识贡献后，系统会按规则展示相应答疑头衔。
+                  人工授予头衔会优先展示；未佩戴头衔时，系统会按社区表现展示默认成长头衔。
                 </div>
                 <div class="mt-4">
                   <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
@@ -76,7 +76,7 @@
 
               <div class="rounded-[24px] bg-[linear-gradient(180deg,#f8fafc_0%,#fff_100%)] p-5 shadow-soft">
                 <div class="flex items-center gap-2">
-                  <div class="text-base font-semibold text-slate-900">答疑头衔</div>
+                  <div class="text-base font-semibold text-slate-900">当前头衔</div>
                   <el-popover placement="bottom-start" :width="320" trigger="click">
                     <template #reference>
                       <button
@@ -87,19 +87,20 @@
                       </button>
                     </template>
                     <div class="space-y-3">
-                      <div class="text-sm font-semibold text-slate-900">答疑头衔获取标准</div>
+                      <div class="text-sm font-semibold text-slate-900">默认成长头衔规则</div>
                       <div class="space-y-2 text-sm leading-6 text-slate-600">
-                        <div><span class="font-semibold text-slate-900">热心答主：</span>累计获赞 30+，或累计高质量回复 20+。</div>
-                        <div><span class="font-semibold text-slate-900">知识共建者：</span>知识贡献 3+，或精选回答 2+。</div>
-                        <div><span class="font-semibold text-slate-900">高赞答主：</span>累计获赞 80+，或精选回答 5+。</div>
-                        <div class="text-xs text-slate-400">未达到任一门槛前，默认不授予头衔。</div>
+                        <div v-for="rule in titleRules" :key="rule.id">
+                          <span class="font-semibold text-slate-900">{{ rule.titleName }}：</span>{{ rule.description || '请以后端规则为准' }}
+                        </div>
+                        <div v-if="!titleRules.length" class="text-xs text-slate-400">当前没有可用的默认头衔规则。</div>
+                        <div class="text-xs text-slate-400">如果当前佩戴了人工或系统授予头衔，会优先显示佩戴头衔。</div>
                       </div>
                     </div>
                   </el-popover>
                 </div>
                 <div class="mt-3 text-2xl font-bold text-slate-900">{{ summary?.title || '暂未获得' }}</div>
                 <div class="mt-2 text-sm leading-7 text-slate-500">
-                  只有达到答疑门槛后才会获得头衔，未达标阶段默认不展示头衔。
+                  这里展示你当前佩戴的头衔；若未佩戴任何头衔，则回退显示默认成长头衔。
                 </div>
               </div>
 
@@ -310,7 +311,7 @@
           <div class="text-xs font-bold uppercase tracking-[0.35em] text-brand">My Center</div>
           <h1 class="mt-4 text-4xl font-bold text-slate-900">我的</h1>
           <p class="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-600">
-            登录后可查看我的帖子、我的回复、获赞统计、答疑头衔和资料编辑入口。
+            登录后可查看我的帖子、我的回复、获赞统计、当前头衔和资料编辑入口。
           </p>
           <el-button type="danger" class="!mt-8 !border-brand !bg-brand hover:!bg-brand-dark" @click="openAuth('login')">
             立即登录
@@ -376,6 +377,7 @@ import MainLayout from '../layouts/MainLayout.vue'
 import { deletePost as deleteOwnPost, deleteReply as deleteOwnReply } from '../api/forum'
 import { fetchMyLikeDetails, fetchMyLikedItems, fetchMyLikes, fetchMyPosts, fetchMyReplies, fetchMySummary, updateMyAvatar, updateMyProfile } from '../api/me'
 import { useAppShell } from '../stores/appShell'
+import { titleBadgeClass } from '../utils/titleBadge'
 
 const router = useRouter()
 const { currentUser, ensureShellReady, openAuth, refreshCurrentUser } = useAppShell()
@@ -417,6 +419,7 @@ const statCards = computed(() => [
   { label: '回复', value: summary.value?.replyCount || 0, tip: '我参与答疑的回复数量' },
   { label: '获赞', value: summary.value?.totalLikeReceivedCount || 0, tip: '当前数据库中的帖子与回复累计获赞' }
 ])
+const titleRules = computed(() => summary.value?.titleRules || [])
 
 function genderLabel(value) {
   if (value === 1) return '男'

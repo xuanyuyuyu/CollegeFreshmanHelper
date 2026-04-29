@@ -15,6 +15,8 @@ import com.example.collegefreshmanhelper.user.entity.SysUser;
 import com.example.collegefreshmanhelper.user.entity.UserStats;
 import com.example.collegefreshmanhelper.user.service.UserService;
 import com.example.collegefreshmanhelper.user.service.UserStatsService;
+import com.example.collegefreshmanhelper.user.service.UserTitleDisplayService;
+import com.example.collegefreshmanhelper.user.service.UserTitleMetrics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +43,7 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
     private final ForumLikeService forumLikeService;
     private final UserService userService;
     private final UserStatsService userStatsService;
+    private final UserTitleDisplayService userTitleDisplayService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -186,12 +189,14 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
 
         Map<Long, SysUser> userMap = loadReplyUsers(replies);
         Map<Long, UserStats> statsMap = loadReplyStats(userMap.keySet());
+        Map<Long, UserTitleMetrics> metricsMap = userTitleDisplayService.buildMetricsMap(userMap.keySet(), statsMap);
+        Map<Long, String> titleMap = userTitleDisplayService.findWearingTitles(userMap.keySet());
         Map<Long, Boolean> likeStatusMap = forumLikeService.batchReplyLikeStatus(replies.stream().map(ForumReply::getId).collect(Collectors.toSet()), currentUserId);
         Map<Long, ForumReplyVO> rootReplyMap = new LinkedHashMap<>();
         Map<Long, List<ForumReplyVO>> childReplyMap = new LinkedHashMap<>();
 
         for (ForumReply reply : replies) {
-            ForumReplyVO replyVO = toReplyVO(reply, post.getUserId(), userMap, statsMap, likeStatusMap);
+            ForumReplyVO replyVO = toReplyVO(reply, post.getUserId(), userMap, metricsMap, titleMap, likeStatusMap);
             if (reply.getParentId() == null || reply.getParentId() == 0) {
                 rootReplyMap.put(reply.getId(), replyVO);
                 childReplyMap.putIfAbsent(reply.getId(), new ArrayList<>());
@@ -231,11 +236,9 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
                 .collect(Collectors.toMap(UserStats::getUserId, stats -> stats));
     }
 
-    private ForumReplyVO toReplyVO(ForumReply reply, Long postAuthorId, Map<Long, SysUser> userMap, Map<Long, UserStats> statsMap, Map<Long, Boolean> likeStatusMap) {
+    private ForumReplyVO toReplyVO(ForumReply reply, Long postAuthorId, Map<Long, SysUser> userMap, Map<Long, UserTitleMetrics> metricsMap, Map<Long, String> titleMap, Map<Long, Boolean> likeStatusMap) {
         SysUser author = userMap.get(reply.getUserId());
         SysUser replyToUser = userMap.get(reply.getReplyToUserId());
-        UserStats authorStats = statsMap.get(reply.getUserId());
-        UserStats replyToStats = statsMap.get(reply.getReplyToUserId());
 
         ForumReplyVO replyVO = new ForumReplyVO();
         replyVO.setId(reply.getId());
@@ -243,13 +246,15 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
         replyVO.setUserId(reply.getUserId());
         replyVO.setUserNickname(author == null ? null : author.getNickname());
         replyVO.setUserAvatarUrl(author == null ? null : author.getAvatarUrl());
-        replyVO.setUserTitle(resolveTitle(authorStats));
+        replyVO.setUserTitle(resolveDisplayedTitle(reply.getUserId(), titleMap, metricsMap));
+        replyVO.setUserCustomTitle(hasCustomTitle(reply.getUserId(), titleMap));
         replyVO.setPostAuthor(Objects.equals(reply.getUserId(), postAuthorId));
         replyVO.setParentId(reply.getParentId());
         replyVO.setReplyToReplyId(reply.getReplyToReplyId());
         replyVO.setReplyToUserId(reply.getReplyToUserId());
         replyVO.setReplyToUserNickname(replyToUser == null ? null : replyToUser.getNickname());
-        replyVO.setReplyToUserTitle(resolveTitle(replyToStats));
+        replyVO.setReplyToUserTitle(resolveDisplayedTitle(reply.getReplyToUserId(), titleMap, metricsMap));
+        replyVO.setReplyToUserCustomTitle(hasCustomTitle(reply.getReplyToUserId(), titleMap));
         replyVO.setContent(reply.getContent());
         replyVO.setContentType(reply.getContentType());
         replyVO.setImageUrl(reply.getImageUrl());
@@ -260,29 +265,18 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
         return replyVO;
     }
 
-    private String resolveTitle(UserStats stats) {
-        if (stats == null) {
-            return "新生伙伴";
+    private String resolveDisplayedTitle(Long userId, Map<Long, String> titleMap, Map<Long, UserTitleMetrics> metricsMap) {
+        if (userId != null) {
+            String wearingTitle = titleMap.get(userId);
+            if (wearingTitle != null) {
+                return wearingTitle;
+            }
         }
-        int postLikes = defaultZero(stats.getPostLikeReceivedCount());
-        int replyLikes = defaultZero(stats.getReplyLikeReceivedCount());
-        int totalLikes = postLikes + replyLikes;
-        int featuredAnswers = defaultZero(stats.getFeaturedAnswerCount());
-        int contributionCount = defaultZero(stats.getKnowledgeContributionCount());
-        int replyCount = defaultZero(stats.getReplyCount());
-        if (featuredAnswers >= 5 || totalLikes >= 80) {
-            return "高赞答主";
-        }
-        if (contributionCount >= 3 || featuredAnswers >= 2) {
-            return "知识共建者";
-        }
-        if (replyCount >= 15 || totalLikes >= 20) {
-            return "热心学长";
-        }
-        if (totalLikes >= 5) {
-            return "活跃伙伴";
-        }
-        return "新生伙伴";
+        return userTitleDisplayService.resolveAutomaticTitle(metricsMap.get(userId));
+    }
+
+    private boolean hasCustomTitle(Long userId, Map<Long, String> titleMap) {
+        return userId != null && titleMap.get(userId) != null;
     }
 
     private void decrementPostReplyCount(Long postId, int count) {
@@ -290,9 +284,5 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
                 .eq(ForumPost::getId, postId)
                 .setSql("reply_count = GREATEST(IFNULL(reply_count, 0) - " + count + ", 0)")
                 .update();
-    }
-
-    private int defaultZero(Integer value) {
-        return value == null ? 0 : value;
     }
 }

@@ -1,5 +1,6 @@
 com/example/collegefreshmanhelper/admin/dto/AdminGrantTitleRequest.class
 com/example/collegefreshmanhelper/admin/service/impl/AdminKnowledgeServiceImpl.class
+com/example/collegefreshmanhelper/user/service/UserTitleDisplayService.class
 com/example/collegefreshmanhelper/admin/entity/KnowledgeQaTrace.class
 com/example/collegefreshmanhelper/user/entity/UserStats.class
 com/example/collegefreshmanhelper/admin/controller/AdminTitleController.class
@@ -96,8 +97,10 @@ com/example/collegefreshmanhelper/common/config/JacksonConfig.class
 com/example/collegefreshmanhelper/common/model/PageResult.class
 com/example/collegefreshmanhelper/common/handler/GlobalExceptionHandler.class
 com/example/collegefreshmanhelper/forum/entity/ForumReply.class
+com/example/collegefreshmanhelper/user/vo/UserTitleRuleVO.class
 com/example/collegefreshmanhelper/forum/vo/ForumPostSummaryVO.class
 com/example/collegefreshmanhelper/admin/dto/AdminDeleteRequest.class
 com/example/collegefreshmanhelper/admin/service/impl/AdminUserServiceImpl.class
 com/example/collegefreshmanhelper/admin/mapper/SysTitleMapper.class
 com/example/collegefreshmanhelper/auth/dto/RegisterRequest.class
+com/example/collegefreshmanhelper/user/service/UserTitleMetrics.class

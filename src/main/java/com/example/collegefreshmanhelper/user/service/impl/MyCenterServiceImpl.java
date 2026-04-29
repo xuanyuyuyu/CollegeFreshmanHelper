@@ -15,6 +15,8 @@ import com.example.collegefreshmanhelper.user.entity.UserStats;
 import com.example.collegefreshmanhelper.user.service.MyCenterService;
 import com.example.collegefreshmanhelper.user.service.UserService;
 import com.example.collegefreshmanhelper.user.service.UserStatsService;
+import com.example.collegefreshmanhelper.user.service.UserTitleDisplayService;
+import com.example.collegefreshmanhelper.user.service.UserTitleMetrics;
 import com.example.collegefreshmanhelper.user.vo.MyCenterLikeVO;
 import com.example.collegefreshmanhelper.user.vo.MyCenterLikeDetailVO;
 import com.example.collegefreshmanhelper.user.vo.MyCenterLikedItemVO;
@@ -43,6 +45,7 @@ public class MyCenterServiceImpl implements MyCenterService {
     private final ForumLikeRecordMapper forumLikeRecordMapper;
     private final ForumPostService forumPostService;
     private final ForumReplyService forumReplyService;
+    private final UserTitleDisplayService userTitleDisplayService;
 
     @Override
     public MyCenterSummaryVO getSummary(Long currentUserId) {
@@ -84,7 +87,9 @@ public class MyCenterServiceImpl implements MyCenterService {
     public MyCenterLikeVO getLikeStats(Long currentUserId) {
         userService.getActiveUserById(currentUserId);
         UserStats stats = getOrInitStats(currentUserId);
-        return buildLikeSnapshot(currentUserId, stats);
+        MyCenterLikeVO likeVO = buildLikeSnapshot(currentUserId, stats);
+        likeVO.setTitle(resolveDisplayedTitle(currentUserId, likeVO.getTitle()));
+        return likeVO;
     }
 
     @Override
@@ -208,7 +213,8 @@ public class MyCenterServiceImpl implements MyCenterService {
         summaryVO.setTotalLikeReceivedCount(defaultZero(likeVO.getTotalLikeReceivedCount()));
         summaryVO.setKnowledgeContributionCount(defaultZero(stats.getKnowledgeContributionCount()));
         summaryVO.setFeaturedAnswerCount(defaultZero(stats.getFeaturedAnswerCount()));
-        summaryVO.setTitle(likeVO.getTitle());
+        summaryVO.setTitle(resolveDisplayedTitle(user.getId(), likeVO.getTitle()));
+        summaryVO.setTitleRules(userTitleDisplayService.listAutomaticTitleRules());
         return summaryVO;
     }
 
@@ -219,6 +225,7 @@ public class MyCenterServiceImpl implements MyCenterService {
         int featuredAnswers = defaultZero(stats.getFeaturedAnswerCount());
         int contributionCount = defaultZero(stats.getKnowledgeContributionCount());
         int replyCount = countMyReplies(userId);
+        UserTitleMetrics titleMetrics = userTitleDisplayService.buildMetrics(stats, replyCount, replyLikes);
 
         MyCenterLikeVO likeVO = new MyCenterLikeVO();
         likeVO.setPostLikeReceivedCount(postLikes);
@@ -226,21 +233,13 @@ public class MyCenterServiceImpl implements MyCenterService {
         likeVO.setTotalLikeReceivedCount(totalLikes);
         likeVO.setFeaturedAnswerCount(featuredAnswers);
         likeVO.setKnowledgeContributionCount(contributionCount);
-        likeVO.setTitle(resolveTitle(totalLikes, featuredAnswers, contributionCount, replyCount));
+        likeVO.setTitle(userTitleDisplayService.resolveAutomaticTitle(titleMetrics));
         return likeVO;
     }
 
-    private String resolveTitle(int totalLikes, int featuredAnswers, int contributionCount, int replyCount) {
-        if (featuredAnswers >= 5 || totalLikes >= 80) {
-            return "高赞答主";
-        }
-        if (contributionCount >= 3 || featuredAnswers >= 2) {
-            return "知识共建者";
-        }
-        if (replyCount >= 20 || totalLikes >= 30) {
-            return "热心答主";
-        }
-        return null;
+    private String resolveDisplayedTitle(Long userId, String fallbackTitle) {
+        String wearingTitle = userTitleDisplayService.findWearingTitle(userId);
+        return wearingTitle != null ? wearingTitle : fallbackTitle;
     }
 
     private int countMyPosts(Long userId) {
