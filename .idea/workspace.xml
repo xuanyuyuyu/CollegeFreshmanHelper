@@ -4,14 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3b40f802-aeff-4f09-8847-43dac742294a" name="更改" comment="伪造帖子测试、完善帖子、头衔逻辑">
+    <list default="true" id="3b40f802-aeff-4f09-8847-43dac742294a" name="更改" comment="实现完成论坛逻辑">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/CHAT_CONTEXT.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/CHAT_CONTEXT.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/DEVELOPMENT.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/DEVELOPMENT.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ForumDetailPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ForumDetailPage.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ForumPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ForumPage.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/router/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/AdminPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/AdminPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MePage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MePage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/admin/service/impl/AdminKnowledgeServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/collegefreshmanhelper/admin/service/impl/AdminKnowledgeServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/admin/service/impl/AdminKnowledgeServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/admin/service/impl/AdminKnowledgeServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/impl/ForumPostServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/collegefreshmanhelper/forum/service/impl/ForumPostServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -121,7 +122,7 @@
       <workItem from="1777269297689" duration="5663000" />
       <workItem from="1777275532690" duration="96000" />
       <workItem from="1777275644863" duration="5466000" />
-      <workItem from="1777427385162" duration="4754000" />
+      <workItem from="1777427385162" duration="9585000" />
     </task>
     <task id="LOCAL-00001" summary="初始化">
       <option name="closed" value="true" />
@@ -195,7 +196,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777433649124</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="实现完成论坛逻辑">
+      <option name="closed" value="true" />
+      <created>1777435091043</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1777435091043</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -221,6 +230,7 @@
     <MESSAGE value="基本完成论坛、后台管理、我的" />
     <MESSAGE value="完成“论坛”，“我的”，“头衔”前后端开发" />
     <MESSAGE value="伪造帖子测试、完善帖子、头衔逻辑" />
-    <option name="LAST_COMMIT_MESSAGE" value="伪造帖子测试、完善帖子、头衔逻辑" />
+    <MESSAGE value="实现完成论坛逻辑" />
+    <option name="LAST_COMMIT_MESSAGE" value="实现完成论坛逻辑" />
   </component>
 </project>

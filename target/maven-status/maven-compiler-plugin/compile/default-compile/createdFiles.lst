@@ -7,6 +7,7 @@ com/example/collegefreshmanhelper/user/entity/UserStats.class
 com/example/collegefreshmanhelper/admin/controller/AdminTitleController.class
 com/example/collegefreshmanhelper/admin/service/AdminOperationLogService.class
 com/example/collegefreshmanhelper/user/controller/MyCenterController.class
+com/example/collegefreshmanhelper/knowledge/service/impl/KnowledgeTraceServiceImpl.class
 com/example/collegefreshmanhelper/forum/service/ForumPostService.class
 com/example/collegefreshmanhelper/auth/controller/AuthController.class
 com/example/collegefreshmanhelper/forum/mapper/ForumLikeRecordMapper.class
@@ -71,6 +72,7 @@ com/example/collegefreshmanhelper/common/config/StaticResourceConfig.class
 com/example/collegefreshmanhelper/admin/mapper/KnowledgeQaTraceMapper.class
 com/example/collegefreshmanhelper/admin/vo/AdminTitleVO.class
 com/example/collegefreshmanhelper/forum/service/ForumReplyService.class
+com/example/collegefreshmanhelper/workflow/service/ForumKnowledgeWorkflowService.class
 com/example/collegefreshmanhelper/auth/vo/LoginVO.class
 com/example/collegefreshmanhelper/admin/vo/AdminKnowledgeVO.class
 com/example/collegefreshmanhelper/admin/controller/AdminUserController.class
@@ -83,6 +85,7 @@ com/example/collegefreshmanhelper/forum/entity/ForumPost.class
 com/example/collegefreshmanhelper/forum/controller/ForumPostController.class
 com/example/collegefreshmanhelper/user/service/impl/UserStatsServiceImpl.class
 com/example/collegefreshmanhelper/forum/vo/ForumPostDetailVO.class
+com/example/collegefreshmanhelper/rag/service/RagQueryService.class
 com/example/collegefreshmanhelper/forum/entity/ForumLikeRecord.class
 com/example/collegefreshmanhelper/forum/controller/ForumReplyController.class
 com/example/collegefreshmanhelper/auth/dto/LoginRequest.class
@@ -106,3 +109,4 @@ com/example/collegefreshmanhelper/admin/service/impl/AdminUserServiceImpl.class
 com/example/collegefreshmanhelper/admin/mapper/SysTitleMapper.class
 com/example/collegefreshmanhelper/auth/dto/RegisterRequest.class
 com/example/collegefreshmanhelper/user/service/UserTitleMetrics.class
+com/example/collegefreshmanhelper/knowledge/service/KnowledgeTraceService.class
