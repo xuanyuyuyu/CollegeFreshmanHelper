@@ -1,43 +1,54 @@
 # 高校新生入学服务与交流平台
 
-面向高校新生的入学服务、交流与智能问答平台。项目当前以 `论坛 + 个人中心 + 管理后台` 为主要已落地主线，`RAG 问答闭环、内容审核、Qdrant 接入` 仍属于后续迭代重点。
+面向高校新生的入学服务、论坛交流与后续智能问答场景的全栈项目。当前已经落地的主线是 `论坛 + 个人中心 + 后台管理`，`内容审核、论坛飞轮、RAG 问答` 仍在后续迭代中。
 
 ## 1. 项目概览
 
-### 1.1 业务定位
+### 1.1 当前定位
 
-- `Forum`：新生与老生围绕宿舍、学习、军训、食堂等话题进行发帖、回帖、互动
-- `AI Assistant`：后续基于提纯 QA 知识库提供智能问答
-- `Admin Console`：管理员和超级管理员进行内容治理、账号治理、知识库维护和日志追踪
+- 首页与导航：承接校园入口、论坛、智能问答、指南、个人中心、后台管理
+- 论坛：帖子列表、帖子详情、双层展示回复、点赞、浏览、排序、筛选
+- 个人中心：我的资料、我的帖子、我的回复、我的点赞、我的获赞
+- 后台管理：管理员账号、帖子管理、评论管理、用户治理、运营台
+- 智能问答：页面已存在，但真正可用的 RAG 链路尚未完成
 
 ### 1.2 当前实际状态
 
-当前项目已经完成：
+已完成：
 
-- 用户注册、登录、退出、获取当前用户
-- 论坛主链路：发帖、列表、详情、多层回复语义、点赞、浏览数、热门排序
-- 个人中心：我的资料、我的帖子、我的回复、我的获赞、头衔展示
-- 管理后台：帖子管理、评论管理、用户治理、管理员账号管理、头衔管理、知识库管理、操作日志
-- 前端多页面与后端接口联动
+- 注册、登录、退出、获取当前用户
+- 登录/注册前端基础校验与字段级报错
+- 注册补充 `confirmPassword`、`role`、`admissionYear`
+- 导航、首页、论坛、我的、后台管理等主要前端页面
+- 论坛发帖、帖子详情、回复、点赞、浏览数、热门排序
+- 回复“多层语义、双层展示”模型
+- 作者删除自己的帖子和回复
+- 个人中心“我的帖子 / 我的回复 / 我的点赞 / 我的获赞”
+- 头衔统一到 `sys_title + sys_user_title`
+- 自动授予 / 自动佩戴头衔，且一个用户只保留一个头衔
+- 后台按账号人工授予 / 撤销头衔
+- 后台帖子、评论、用户、管理员、知识库、操作日志基础治理能力
+- 论坛无限滚动与返回列表位置恢复
+- Flyway 迁移和基础造数脚本
 
-当前项目尚未完成：
+暂未完成：
 
-- 文本/图片内容审核
-- 图片异步审核 MQ 链路
+- 文本 / 图片内容审核
+- RabbitMQ 驱动的审核链路
+- 论坛高价值回复自动提炼入知识库
+- 真正可用的知识检索与 RAG 问答
 - Qdrant 接入
-- 百炼 LLM / Embedding 接入
-- 高赞回复自动提纯入库
-- 真正可用的 RAG 问答接口
-- 匿名浏览防刷
+- LLM / Embedding 接入
+- 更严格的匿名防刷与风控
 
 ## 2. 技术栈
 
 ### 2.1 后端
 
 - Java 17
-- Spring Boot 3.4.x
-- MyBatis-Plus
-- Sa-Token + JWT
+- Spring Boot 3.4.0
+- MyBatis-Plus 3.5.10.1
+- Sa-Token 1.44.0 + JWT
 - MySQL 8.x
 - Redis
 - RabbitMQ
@@ -45,163 +56,160 @@
 
 ### 2.2 前端
 
-- Vue 3
-- Vue Router
-- Element Plus
-- Tailwind CSS
+- Vue 3.5
+- Vue Router 4
+- Element Plus 2.10
+- Tailwind CSS 3
 - Axios
-- Vite
+- Vite 6
 
 ### 2.3 规划中的外部能力
 
 - 阿里云 OSS
-- 阿里云 Green
-- 阿里百炼
+- 阿里云内容安全
+- 百炼 LLM / Embedding
 - Qdrant
 
-## 3. 资源约束
+## 3. 目录结构
 
-项目目标部署环境仍然是 `2C2G`：
+```text
+CollegeFreshmanHelper/
+├─ src/main/java/com/example/collegefreshmanhelper/
+│  ├─ admin/        后台治理、知识库、头衔、操作日志
+│  ├─ auth/         注册登录与登录态
+│  ├─ common/       通用响应、异常、配置、分页
+│  ├─ forum/        帖子、回复、点赞、浏览
+│  └─ user/         个人中心、资料、统计、头衔显示
+├─ src/main/resources/db/migration/
+│  ├─ V1__init_schema.sql
+│  ├─ V2__seed_superadmin_login.sql
+│  ├─ V3__fix_user_stats_deleted_column.sql
+│  ├─ V4__add_forum_like_record.sql
+│  └─ V5__enforce_single_user_title.sql
+├─ frontend/src/
+│  ├─ api/          前端接口封装
+│  ├─ layouts/      主布局与登录注册弹窗
+│  ├─ pages/        首页、论坛、详情、我的、后台等页面
+│  ├─ router/       前端路由
+│  ├─ stores/       appShell 状态
+│  └─ utils/        头衔颜色等工具
+├─ docs/
+│  ├─ CHAT_CONTEXT.md
+│  └─ DEVELOPMENT.md
+└─ scripts/         本地辅助脚本与造数脚本
+```
 
-- JVM：`-Xms256m -Xmx512m`
-- MySQL：建议 `innodb_buffer_pool_size=128M`
-- Qdrant：建议 `mem_limit: 300M`，并使用 on-disk 模式
-
-## 4. 当前已实现模块
+## 4. 核心业务能力
 
 ### 4.1 认证与用户
 
-- 注册
-- 登录
-- 获取当前用户信息
-- 退出登录
-- 修改个人资料
-- 修改头像 URL
-- 超级管理员初始化账号
+- 注册、登录、退出、当前用户信息
+- 用户名文案已统一成“账号”
+- 注册支持身份选择：`我是新生 / 我是老生`
+- 注册支持可选入学年份，默认值为 `2026`
+- 可修改昵称、头像 URL、身份、入学年份
 
 ### 4.2 论坛
 
-- 发帖
-- 帖子分页列表
-- 帖子详情
-- 多层回复语义支持
-- 双层展示结构
+- 帖子列表分页接口
+- 前端长列表无限滚动加载
+- 分类筛选：`宿舍 / 学习 / 食堂 / 军训 / 其他`
+- 排序：`最新发布 / 热门优先`
+- 帖子详情、图片展示、浏览计数
+- 一级回复和楼中楼展示
 - 帖子点赞 / 取消点赞
 - 回复点赞 / 取消点赞
-- 浏览数统计
-- 已登录用户 12 小时内浏览去重
-- 最新 / 热门排序
+- 作者删除自己的帖子
+- 作者删除自己的回复
+- 从详情返回论坛时恢复原列表位置
 
 ### 4.3 个人中心
 
-- 我的概览
+- 我的资料
 - 我的帖子
 - 我的回复
-- 我的获赞统计
-- 答疑头衔展示
+- 我的点赞
+- 我的获赞
+- 头衔展示与规则说明
+
+### 4.4 后台管理
+
+- 管理员账号管理
+- 帖子管理
+- 评论管理
+- 用户治理
+- 运营台
+- 知识库管理
+- 头衔管理
+- 操作日志查询
 
 说明：
 
-- 项目中已经移除了“申请奖励”相关逻辑
-- 当前保留的是 `头衔、积分、知识贡献` 体系
-
-### 4.4 管理后台
-
-#### 管理员账号
-
-- 超级管理员创建普通管理员账号
-- 超级管理员启用 / 禁用普通管理员账号
-- 管理员账号分页与关键词筛选
-
-#### 帖子管理
-
-- 帖子分页
-- 按标题 / 正文 / 作者 / 帖子 ID 搜索
-- 按状态 / 可见性筛选
-- 隐藏帖子
-- 恢复帖子可见
-- 删除帖子
-
-#### 评论管理
-
-- 评论分页
-- 按评论内容 / 作者 / 被回复用户 / 来源帖子标题正文 / 帖子 ID 搜索
-- 按状态 / 可见性筛选
-- 隐藏评论
-- 恢复评论可见
-- 删除评论
-
-#### 用户治理
-
-- 用户分页
-- 按账号 / 昵称 / 用户 ID 搜索
-- 按角色 / 状态筛选
-- 管理员可封禁普通用户
-- 管理员可解封普通用户
-- 超级管理员保留更高权限
-- 超级管理员不可被封禁
-
-#### 其他后台能力
-
-- 用户详情查看
-- 操作日志分页与筛选
-- 手动新增知识库条目
-- 知识库条目分页、筛选、上下线
-- 头衔列表查询
-- 人工授予头衔
-- 已授予头衔分页查询
-- 人工撤销头衔
+- 奖励申请整条业务线已经删除，不要再恢复
+- 内容审核明确放到最后做
 
 ## 5. 核心设计约束
 
 ### 5.1 回复模型
 
-回复采用“多层语义、双层展示”设计：
+当前采用“多层语义、双层展示”：
 
 - 一级回复：`parent_id = 0`
-- 所有楼中楼回复：`parent_id = 所属一级回复ID`
+- 楼中楼回复：`parent_id = 所属一级回复ID`
 - 实际回复目标：`reply_to_reply_id`
 - 实际回复用户：`reply_to_user_id`
 
-这样可以支持：
-
-- A 回复主楼
-- B 回复 A
-- C 回复 “B 对 A 的回复”
-
-但前端依然固定为两层展示，避免无限缩进。
+这样既支持回复任意一条回复，也避免前端无限嵌套。
 
 ### 5.2 点赞模型
 
-- Redis Set 存用户点赞关系
-- Redis Hash 暂存最新点赞数
-- 定时任务批量回刷 MySQL
-- 不允许每次点赞直接 `UPDATE` MySQL 计数
+- `forum_like_record` 持久化点赞关系与点赞时间
+- Redis 保存点赞关系和计数缓存
+- 定时任务回刷最终计数到 MySQL
+- “我的点赞”按持久化点赞记录查询
 
 ### 5.3 浏览数模型
 
-- 当前只对登录用户做去重
-- Redis Key 按 `postId + userId` 隔离
-- TTL 12 小时
+- 当前仅对登录用户做去重
+- 维度：`postId + userId`
+- TTL：12 小时
 
-## 6. 头衔规则
+### 5.4 头衔模型
 
-当前系统保留答疑头衔逻辑：
+- 头衔统一来自 `sys_title`
+- 用户实际佩戴状态统一来自 `sys_user_title`
+- 一个用户只能有一条 `sys_user_title`
+- 管理员手动授予优先级最高
+- 没有管理员头衔时，系统根据规则自动授予 / 自动切换默认头衔
 
-- `热心答主`：回复数 `>= 20` 或累计获赞 `>= 30`
-- `知识共建者`：知识贡献数 `>= 3` 或高质量回答数 `>= 2`
-- `高赞答主`：累计获赞 `>= 80` 或高质量回答数 `>= 5`
+## 6. 头衔现状
 
-未达到条件前默认不展示头衔。
+当前前后端统一使用 `sys_title`，默认头衔不再前端硬编码。
+
+当前展示颜色规则：
+
+- `热心答主`：蓝色
+- `高赞答主`：蓝色
+- `知识共建者`：蓝色
+- `校园百晓生`：紫色
+- `官方认证学长`：金色
+
+说明：
+
+- “默认头衔”和 `sys_title` 已统一
+- 论坛列表、帖子详情、回复区、个人中心都走同一套头衔显示逻辑
 
 ## 7. 数据库与迁移
 
-项目当前使用 Flyway 管理初始化脚本：
+### 7.1 迁移版本
 
 - [V1__init_schema.sql](/Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/resources/db/migration/V1__init_schema.sql)
 - [V2__seed_superadmin_login.sql](/Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/resources/db/migration/V2__seed_superadmin_login.sql)
+- [V3__fix_user_stats_deleted_column.sql](/Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/resources/db/migration/V3__fix_user_stats_deleted_column.sql)
+- [V4__add_forum_like_record.sql](/Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/resources/db/migration/V4__add_forum_like_record.sql)
+- [V5__enforce_single_user_title.sql](/Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/resources/db/migration/V5__enforce_single_user_title.sql)
 
-### 7.1 核心表
+### 7.2 核心表
 
 - `sys_user`
 - `user_stats`
@@ -210,27 +218,32 @@
 - `forum_post`
 - `forum_post_image`
 - `forum_reply`
+- `forum_like_record`
 - `knowledge_qa_trace`
 - `admin_operation_log`
 
-### 7.2 重要说明
+### 7.3 已知说明
 
-最近已经修改过初始化 SQL，移除了“奖励申请”整条业务线。  
-如果你的本地数据库已经执行过旧版 Flyway 迁移，重新启动时可能遇到 checksum 差异。
+- `knowledge_qa_trace` 已预留 `contributor_user_id`、`source_reply_id`
+- 论坛飞轮真正接入后，需要在“回复提炼进知识库”时补齐这两个字段
+- 本地库已经造过较多论坛测试数据，便于联调无限滚动和互动数据
 
-开发环境建议：
+### 7.4 Flyway 注意事项
 
-1. 直接重建数据库重新初始化
-2. 或先做 Flyway `repair` 再继续
+初始化 SQL 之前已经改过，且移除了旧的奖励申请相关内容。  
+如果本地数据库执行过旧迁移版本，建议：
 
-### 7.3 超级管理员
+1. 重建开发库
+2. 或先执行 Flyway `repair`
 
-- 用户名：`superadmin`
+### 7.5 默认超级管理员
+
+- 账号：`superadmin`
 - 密码：`Admin@123456`
 
 上线前必须修改默认密码。
 
-## 8. 后端接口概览
+## 8. 接口概览
 
 ### 8.1 认证
 
@@ -244,85 +257,43 @@
 - `POST /api/posts`
 - `GET /api/posts/page`
 - `GET /api/posts/{postId}`
+- `DELETE /api/posts/{postId}`
 - `POST /api/posts/{postId}/like`
 - `DELETE /api/posts/{postId}/like`
 - `POST /api/posts/{postId}/replies`
 - `GET /api/posts/{postId}/replies`
-- `POST /api/posts/{replyId}/like`
-- `DELETE /api/posts/{replyId}/like`
+- `DELETE /api/posts/{postId}/replies/{replyId}`
+- `POST /api/replies/{replyId}/like`
+- `DELETE /api/replies/{replyId}/like`
 
 ### 8.3 个人中心
 
 - `GET /api/users/me/summary`
 - `GET /api/users/me/posts`
 - `GET /api/users/me/replies`
+- `GET /api/users/me/liked-items`
 - `GET /api/users/me/likes`
 - `PUT /api/users/me/profile`
 - `PUT /api/users/me/avatar`
 
-### 8.4 管理后台
+### 8.4 后台
 
-- `GET /api/admin/users/page`
-- `GET /api/admin/users/{userId}`
-- `POST /api/admin/users/{userId}/ban`
-- `POST /api/admin/users/{userId}/unban`
-- `POST /api/admin/users/admins`
-- `POST /api/admin/users/{userId}/status`
-- `GET /api/admin/posts/page`
-- `POST /api/admin/posts/{postId}/visibility`
-- `POST /api/admin/posts/{postId}/delete`
-- `GET /api/admin/replies/page`
-- `POST /api/admin/replies/{replyId}/visibility`
-- `POST /api/admin/replies/{replyId}/delete`
-- `GET /api/admin/knowledge/page`
-- `POST /api/admin/knowledge`
-- `POST /api/admin/knowledge/{knowledgeId}/status`
-- `GET /api/admin/titles`
-- `GET /api/admin/titles/grants/page`
-- `POST /api/admin/titles/grant`
-- `POST /api/admin/titles/grants/{userTitleId}/revoke`
-- `GET /api/admin/logs/page`
+- 管理员账号管理接口
+- 帖子 / 评论治理接口
+- 用户治理接口
+- 头衔授予 / 撤销 / 列表接口
+- 知识库管理接口
+- 操作日志接口
 
-## 9. 包结构
+## 9. 本地运行
 
-当前后端以业务域拆分：
-
-```text
-src/main/java/com/example/collegefreshmanhelper
-├── admin
-├── auth
-├── common
-├── forum
-└── user
-```
-
-后续建议新增：
-
-- `ai`
-- `knowledge`
-- `mq`
-- `integration`
-
-## 10. 本地运行
-
-### 10.1 环境要求
-
-- JDK 17
-- Maven 3.9+
-- MySQL 8.x
-- Redis 6.x / 7.x
-- Node.js 18+
-- npm 9+
-
-### 10.2 后端启动
+### 9.1 后端
 
 ```bash
 mvn spring-boot:run
 ```
 
-默认端口：`8080`
-
-### 10.3 前端启动
+### 9.2 前端
 
 ```bash
 cd frontend
@@ -330,19 +301,17 @@ npm install
 npm run dev
 ```
 
-### 10.4 编译检查
+### 9.3 编译检查
 
 ```bash
 mvn -q -DskipTests compile
 cd frontend && npm run build
 ```
 
-## 11. 下一步建议
+## 10. 当前最值得继续开发的方向
 
-建议优先级：
-
-1. 内容审核接入
-2. MQ 驱动的高赞回复提纯链路
-3. Qdrant + Embedding + 百炼问答接口
-4. 我的获赞明细
-5. 匿名浏览防刷
+1. 论坛回复提炼入知识库的飞轮链路
+2. 内容审核接入
+3. 知识库检索与 RAG 问答闭环
+4. 论坛长列表进一步优化
+5. 更细的风控、防刷和运营策略

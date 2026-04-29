@@ -3,7 +3,7 @@
     <section class="mx-auto w-full max-w-[1320px] px-4 py-8 sm:px-6 lg:px-8">
       <div class="space-y-6">
         <div class="flex items-center gap-3 text-sm text-slate-400">
-          <button type="button" class="font-medium text-brand transition hover:text-brand-dark" @click="router.push('/forum')">
+          <button type="button" class="font-medium text-brand transition hover:text-brand-dark" @click="goBackToForum">
             返回论坛
           </button>
           <span>/</span>
@@ -357,6 +357,14 @@ function fallbackInitial(value) {
 
 function normalizeContent(content) {
   return String(content || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+}
+
+function goBackToForum() {
+  if (window.history.length > 1) {
+    router.back()
+    return
+  }
+  router.push('/forum')
 }
 
 function resetReplyTarget() {

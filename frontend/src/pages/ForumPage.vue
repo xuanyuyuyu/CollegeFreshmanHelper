@@ -15,7 +15,7 @@
                 </div>
 
                 <div class="flex flex-wrap gap-3">
-                  <el-select v-model="sortType" class="!w-[144px]" @change="resetPostFeed">
+                  <el-select v-model="sortType" class="!w-[144px]">
                     <el-option label="最新发布" value="latest" />
                     <el-option label="热门优先" value="hottest" />
                   </el-select>
@@ -211,6 +211,7 @@ const router = useRouter()
 const composerRef = ref(null)
 const loadMoreTrigger = ref(null)
 const { currentUser, ensureShellReady, openAuth } = useAppShell()
+const FORUM_FEED_STATE_KEY = 'forum-feed-state'
 
 const posts = ref([])
 const loadingPosts = ref(false)
@@ -223,6 +224,9 @@ const pageSize = ref(16)
 const hasMore = ref(true)
 const initialLoaded = ref(false)
 const loadFailed = ref(false)
+const currentRequestToken = ref(0)
+const restoringFeed = ref(false)
+const savedScrollY = ref(0)
 let loadMoreObserver = null
 const tagOptions = ['宿舍', '学习', '食堂', '军训', '其他']
 const categoryTabs = [
@@ -258,6 +262,7 @@ function scrollToComposer() {
 }
 
 function goToPost(postId) {
+  saveForumFeedState()
   router.push(`/forum/${postId}`)
 }
 
@@ -280,6 +285,8 @@ async function loadPosts({ reset = false } = {}) {
   } else {
     loadingMore.value = true
   }
+  const requestToken = reset ? currentRequestToken.value + 1 : currentRequestToken.value
+  currentRequestToken.value = requestToken
   try {
     const page = await fetchPostPage({
       pageNum: pageNum.value,
@@ -287,6 +294,9 @@ async function loadPosts({ reset = false } = {}) {
       sortType: sortType.value,
       tag: currentTagParam()
     })
+    if (requestToken !== currentRequestToken.value) {
+      return
+    }
     const records = page.records || []
     if (reset) {
       posts.value = records
@@ -298,10 +308,17 @@ async function loadPosts({ reset = false } = {}) {
     hasMore.value = loadedCount < total && records.length > 0
     loadFailed.value = false
     initialLoaded.value = true
+    saveForumFeedState()
   } catch (error) {
+    if (!reset) {
+      pageNum.value = Math.max(1, pageNum.value - 1)
+    }
     loadFailed.value = true
     ElMessage.error(`帖子列表加载失败: ${error.message}`)
   } finally {
+    if (requestToken !== currentRequestToken.value) {
+      return
+    }
     if (reset) {
       loadingPosts.value = false
     } else {
@@ -327,6 +344,61 @@ function observeLoadMoreTrigger() {
   if (!loadMoreObserver || !loadMoreTrigger.value) return
   loadMoreObserver.disconnect()
   loadMoreObserver.observe(loadMoreTrigger.value)
+}
+
+function saveForumFeedState() {
+  if (typeof window === 'undefined') return
+  const snapshot = {
+    posts: posts.value,
+    sortType: sortType.value,
+    selectedCategory: selectedCategory.value,
+    pageNum: pageNum.value,
+    pageSize: pageSize.value,
+    hasMore: hasMore.value,
+    initialLoaded: initialLoaded.value,
+    scrollY: window.scrollY || window.pageYOffset || 0
+  }
+  window.sessionStorage.setItem(FORUM_FEED_STATE_KEY, JSON.stringify(snapshot))
+}
+
+function readForumFeedState() {
+  if (typeof window === 'undefined') return null
+  const raw = window.sessionStorage.getItem(FORUM_FEED_STATE_KEY)
+  if (!raw) return null
+  try {
+    return JSON.parse(raw)
+  } catch (error) {
+    window.sessionStorage.removeItem(FORUM_FEED_STATE_KEY)
+    return null
+  }
+}
+
+function restoreScrollPosition(scrollY) {
+  window.requestAnimationFrame(() => {
+    window.scrollTo({ top: scrollY, left: 0, behavior: 'auto' })
+  })
+}
+
+async function restoreForumFeedState() {
+  const snapshot = readForumFeedState()
+  if (!snapshot?.initialLoaded || !Array.isArray(snapshot.posts) || !snapshot.posts.length) {
+    return false
+  }
+  restoringFeed.value = true
+  sortType.value = snapshot.sortType || 'latest'
+  selectedCategory.value = snapshot.selectedCategory || 'all'
+  posts.value = snapshot.posts
+  pageNum.value = Number(snapshot.pageNum || 1)
+  pageSize.value = Number(snapshot.pageSize || 16)
+  hasMore.value = Boolean(snapshot.hasMore)
+  initialLoaded.value = true
+  loadFailed.value = false
+  savedScrollY.value = Number(snapshot.scrollY || 0)
+  await nextTick()
+  observeLoadMoreTrigger()
+  restoreScrollPosition(savedScrollY.value)
+  restoringFeed.value = false
+  return true
 }
 
 function setupLoadMoreObserver() {
@@ -387,21 +459,27 @@ async function submitPost() {
 
 onMounted(async () => {
   await ensureShellReady()
-  await resetPostFeed()
+  const restored = await restoreForumFeedState()
+  if (!restored) {
+    await resetPostFeed()
+  }
   setupLoadMoreObserver()
 })
 
 onBeforeUnmount(() => {
+  saveForumFeedState()
   loadMoreObserver?.disconnect()
 })
 
 watch(sortType, async (nextValue, oldValue) => {
+  if (restoringFeed.value) return
   if (nextValue !== oldValue) {
     await resetPostFeed()
   }
 })
 
 watch(selectedCategory, async (nextValue, oldValue) => {
+  if (restoringFeed.value) return
   if (nextValue !== oldValue) {
     await resetPostFeed()
   }
