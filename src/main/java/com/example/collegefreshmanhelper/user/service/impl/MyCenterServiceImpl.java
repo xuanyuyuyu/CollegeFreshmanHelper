@@ -49,6 +49,7 @@ public class MyCenterServiceImpl implements MyCenterService {
 
     @Override
     public MyCenterSummaryVO getSummary(Long currentUserId) {
+        userTitleDisplayService.syncUserTitle(currentUserId);
         SysUser user = userService.getActiveUserById(currentUserId);
         UserStats stats = getOrInitStats(currentUserId);
         return toSummary(user, stats, buildLikeSnapshot(currentUserId, stats));
@@ -85,6 +86,7 @@ public class MyCenterServiceImpl implements MyCenterService {
 
     @Override
     public MyCenterLikeVO getLikeStats(Long currentUserId) {
+        userTitleDisplayService.syncUserTitle(currentUserId);
         userService.getActiveUserById(currentUserId);
         UserStats stats = getOrInitStats(currentUserId);
         MyCenterLikeVO likeVO = buildLikeSnapshot(currentUserId, stats);

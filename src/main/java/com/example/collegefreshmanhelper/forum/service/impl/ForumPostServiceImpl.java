@@ -161,13 +161,15 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
     }
 
     @Override
-    public Page<ForumPostSummaryVO> pagePublishedPosts(long pageNum, long pageSize, String sortType, Long currentUserId) {
+    public Page<ForumPostSummaryVO> pagePublishedPosts(long pageNum, long pageSize, String sortType, String tag, Long currentUserId) {
         String normalizedSortType = sortType == null ? "latest" : sortType.trim().toLowerCase(Locale.ROOT);
+        String normalizedTag = tag == null ? null : tag.trim();
         Page<ForumPost> page = new Page<>(pageNum, pageSize);
         var query = lambdaQuery()
                 .eq(ForumPost::getDeleted, 0)
                 .eq(ForumPost::getVisibility, 1)
-                .eq(ForumPost::getStatus, 1);
+                .eq(ForumPost::getStatus, 1)
+                .eq(normalizedTag != null && !normalizedTag.isEmpty(), ForumPost::getTags, normalizedTag);
         if ("hottest".equals(normalizedSortType)) {
             query.orderByDesc(ForumPost::getLikeCount)
                     .orderByDesc(ForumPost::getReplyCount)
@@ -179,6 +181,7 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
                     .orderByDesc(ForumPost::getCreatedAt);
         }
         query.page(page);
+        userTitleDisplayService.syncUserTitles(page.getRecords().stream().map(ForumPost::getUserId).collect(Collectors.toSet()));
         Map<Long, SysUser> userMap = loadUserMap(page.getRecords().stream().map(ForumPost::getUserId).collect(Collectors.toSet()));
         Map<Long, UserStats> statsMap = loadStatsMap(page.getRecords().stream().map(ForumPost::getUserId).collect(Collectors.toSet()));
         Map<Long, UserTitleMetrics> metricsMap = userTitleDisplayService.buildMetricsMap(userMap.keySet(), statsMap);
@@ -209,6 +212,7 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
     }
 
     private ForumAuthorVO buildAuthor(Long userId) {
+        userTitleDisplayService.syncUserTitle(userId);
         Map<Long, SysUser> userMap = loadUserMap(Collections.singleton(userId));
         Map<Long, UserStats> statsMap = loadStatsMap(Collections.singleton(userId));
         Map<Long, UserTitleMetrics> metricsMap = userTitleDisplayService.buildMetricsMap(Collections.singleton(userId), statsMap);

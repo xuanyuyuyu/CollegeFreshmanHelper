@@ -15,11 +15,11 @@
                 </div>
 
                 <div class="flex flex-wrap gap-3">
-                  <el-select v-model="sortType" class="!w-[144px]" @change="loadPosts">
+                  <el-select v-model="sortType" class="!w-[144px]" @change="resetPostFeed">
                     <el-option label="最新发布" value="latest" />
                     <el-option label="热门优先" value="hottest" />
                   </el-select>
-                  <el-button class="!border-brand/15 !text-brand" :loading="loadingPosts" @click="loadPosts">
+                  <el-button class="!border-brand/15 !text-brand" :loading="loadingPosts" @click="resetPostFeed">
                     刷新帖子
                   </el-button>
                   <el-button type="danger" class="!border-brand !bg-brand hover:!bg-brand-dark" @click="currentUser ? scrollToComposer() : openAuth('login')">
@@ -44,7 +44,7 @@
 
             <div class="divide-y divide-slate-100">
               <article
-                v-for="post in filteredPosts"
+                v-for="post in posts"
                 :key="post.id"
                 class="group transition hover:bg-[linear-gradient(180deg,#fff_0%,#fcfbfb_100%)]"
               >
@@ -128,8 +128,22 @@
                 </div>
               </article>
 
-              <div v-if="!loadingPosts && !filteredPosts.length" class="px-5 py-10 text-sm text-slate-500 sm:px-7">
+              <div v-if="!loadingPosts && !posts.length" class="px-5 py-10 text-sm text-slate-500 sm:px-7">
                 当前分类下还没有可展示的帖子。
+              </div>
+
+              <div v-if="posts.length" class="px-5 py-6 text-center text-sm text-slate-500 sm:px-7">
+                <div ref="loadMoreTrigger" class="h-1 w-full"></div>
+                <div v-if="loadingMore" class="py-2">正在加载更多帖子...</div>
+                <button
+                  v-else-if="loadFailed"
+                  type="button"
+                  class="rounded-full border border-brand/15 px-4 py-2 text-brand transition hover:bg-brand/5"
+                  @click="loadMorePosts"
+                >
+                  加载失败，点击重试
+                </button>
+                <div v-else-if="!hasMore && initialLoaded" class="py-2">没有更多帖子了</div>
               </div>
             </div>
           </div>
@@ -185,7 +199,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import MainLayout from '../layouts/MainLayout.vue'
@@ -195,13 +209,21 @@ import { titleBadgeClass } from '../utils/titleBadge'
 
 const router = useRouter()
 const composerRef = ref(null)
+const loadMoreTrigger = ref(null)
 const { currentUser, ensureShellReady, openAuth } = useAppShell()
 
 const posts = ref([])
 const loadingPosts = ref(false)
+const loadingMore = ref(false)
 const submittingPost = ref(false)
 const sortType = ref('latest')
 const selectedCategory = ref('all')
+const pageNum = ref(1)
+const pageSize = ref(16)
+const hasMore = ref(true)
+const initialLoaded = ref(false)
+const loadFailed = ref(false)
+let loadMoreObserver = null
 const tagOptions = ['宿舍', '学习', '食堂', '军训', '其他']
 const categoryTabs = [
   { label: '全部帖子', value: 'all' },
@@ -215,13 +237,6 @@ const postForm = reactive({
   title: '',
   tags: '',
   content: ''
-})
-
-const filteredPosts = computed(() => {
-  if (selectedCategory.value === 'all') {
-    return posts.value
-  }
-  return posts.value.filter((post) => post.tags === selectedCategory.value)
 })
 
 function fallbackInitial(value) {
@@ -246,16 +261,87 @@ function goToPost(postId) {
   router.push(`/forum/${postId}`)
 }
 
-async function loadPosts() {
-  loadingPosts.value = true
+function currentTagParam() {
+  return selectedCategory.value === 'all' ? undefined : selectedCategory.value
+}
+
+async function loadPosts({ reset = false } = {}) {
+  if (reset) {
+    pageNum.value = 1
+    hasMore.value = true
+    loadFailed.value = false
+    initialLoaded.value = false
+  }
+  if (!reset && (!hasMore.value || loadingMore.value || loadingPosts.value)) {
+    return
+  }
+  if (reset) {
+    loadingPosts.value = true
+  } else {
+    loadingMore.value = true
+  }
   try {
-    const page = await fetchPostPage({ pageNum: 1, pageSize: 16, sortType: sortType.value })
-    posts.value = page.records || []
+    const page = await fetchPostPage({
+      pageNum: pageNum.value,
+      pageSize: pageSize.value,
+      sortType: sortType.value,
+      tag: currentTagParam()
+    })
+    const records = page.records || []
+    if (reset) {
+      posts.value = records
+    } else {
+      posts.value = [...posts.value, ...records]
+    }
+    const loadedCount = posts.value.length
+    const total = Number(page.total || 0)
+    hasMore.value = loadedCount < total && records.length > 0
+    loadFailed.value = false
+    initialLoaded.value = true
   } catch (error) {
+    loadFailed.value = true
     ElMessage.error(`帖子列表加载失败: ${error.message}`)
   } finally {
-    loadingPosts.value = false
+    if (reset) {
+      loadingPosts.value = false
+    } else {
+      loadingMore.value = false
+    }
   }
+}
+
+async function loadMorePosts() {
+  if (!hasMore.value || loadingMore.value || loadingPosts.value) return
+  pageNum.value += 1
+  await loadPosts()
+}
+
+async function resetPostFeed() {
+  posts.value = []
+  await loadPosts({ reset: true })
+  await nextTick()
+  observeLoadMoreTrigger()
+}
+
+function observeLoadMoreTrigger() {
+  if (!loadMoreObserver || !loadMoreTrigger.value) return
+  loadMoreObserver.disconnect()
+  loadMoreObserver.observe(loadMoreTrigger.value)
+}
+
+function setupLoadMoreObserver() {
+  if (typeof IntersectionObserver === 'undefined') {
+    return
+  }
+  loadMoreObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        loadMorePosts()
+      }
+    },
+    { rootMargin: '240px 0px' }
+  )
+  observeLoadMoreTrigger()
 }
 
 async function togglePostLike(post) {
@@ -288,7 +374,9 @@ async function submitPost() {
     postForm.tags = ''
     postForm.content = ''
     ElMessage.success(`帖子已发布：${post.title}`)
-    await loadPosts()
+    selectedCategory.value = 'all'
+    sortType.value = 'latest'
+    await resetPostFeed()
     goToPost(post.id)
   } catch (error) {
     ElMessage.error(error.message)
@@ -298,6 +386,24 @@ async function submitPost() {
 }
 
 onMounted(async () => {
-  await Promise.all([ensureShellReady(), loadPosts()])
+  await ensureShellReady()
+  await resetPostFeed()
+  setupLoadMoreObserver()
+})
+
+onBeforeUnmount(() => {
+  loadMoreObserver?.disconnect()
+})
+
+watch(sortType, async (nextValue, oldValue) => {
+  if (nextValue !== oldValue) {
+    await resetPostFeed()
+  }
+})
+
+watch(selectedCategory, async (nextValue, oldValue) => {
+  if (nextValue !== oldValue) {
+    await resetPostFeed()
+  }
 })
 </script>

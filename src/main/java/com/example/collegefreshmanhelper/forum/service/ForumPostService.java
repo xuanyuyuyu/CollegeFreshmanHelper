@@ -15,5 +15,5 @@ public interface ForumPostService extends IService<ForumPost> {
 
     ForumPostDetailVO getPostDetail(Long postId, boolean incrementView, Long currentUserId);
 
-    Page<ForumPostSummaryVO> pagePublishedPosts(long pageNum, long pageSize, String sortType, Long currentUserId);
+    Page<ForumPostSummaryVO> pagePublishedPosts(long pageNum, long pageSize, String sortType, String tag, Long currentUserId);
 }

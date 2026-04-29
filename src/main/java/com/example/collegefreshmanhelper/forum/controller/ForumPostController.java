@@ -54,8 +54,9 @@ public class ForumPostController {
     public ApiResponse<PageResult<ForumPostSummaryVO>> pagePublishedPosts(
             @RequestParam(defaultValue = "1") long pageNum,
             @RequestParam(defaultValue = "10") long pageSize,
-            @RequestParam(defaultValue = "latest") String sortType) {
-        return ApiResponse.success(PageResult.of(forumPostService.pagePublishedPosts(pageNum, pageSize, sortType, LoginUserContext.getCurrentUserIdOrNull())));
+            @RequestParam(defaultValue = "latest") String sortType,
+            @RequestParam(required = false) String tag) {
+        return ApiResponse.success(PageResult.of(forumPostService.pagePublishedPosts(pageNum, pageSize, sortType, tag, LoginUserContext.getCurrentUserIdOrNull())));
     }
 
     @SaCheckLogin

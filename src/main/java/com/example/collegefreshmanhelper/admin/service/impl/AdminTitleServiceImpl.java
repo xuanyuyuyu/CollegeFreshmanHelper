@@ -14,6 +14,7 @@ import com.example.collegefreshmanhelper.common.exception.BusinessException;
 import com.example.collegefreshmanhelper.common.model.PageResult;
 import com.example.collegefreshmanhelper.user.entity.SysUser;
 import com.example.collegefreshmanhelper.user.service.UserService;
+import com.example.collegefreshmanhelper.user.service.UserTitleDisplayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ public class AdminTitleServiceImpl implements AdminTitleService {
     private final SysUserTitleMapper sysUserTitleMapper;
     private final UserService userService;
     private final AdminOperationLogService adminOperationLogService;
+    private final UserTitleDisplayService userTitleDisplayService;
 
     @Override
     public List<AdminTitleVO> listEnabledTitles() {
@@ -74,29 +76,18 @@ public class AdminTitleServiceImpl implements AdminTitleService {
             throw new BusinessException("账号不存在");
         }
         Long userId = targetUser.getId();
-        SysTitle title = getEnabledTitle(request.getTitleId());
-        SysUserTitle exists = sysUserTitleMapper.selectOne(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysUserTitle>()
+        getEnabledTitle(request.getTitleId());
+        SysUserTitle before = sysUserTitleMapper.selectOne(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysUserTitle>()
                 .eq(SysUserTitle::getUserId, userId)
-                .eq(SysUserTitle::getTitleId, request.getTitleId()));
-        if (exists != null) {
-            throw new BusinessException("该用户已拥有此头衔");
-        }
-
-        boolean wearing = Boolean.TRUE.equals(request.getWearing());
-        if (wearing) {
-            clearWearingForUser(userId);
-        }
-
-        SysUserTitle userTitle = new SysUserTitle();
-        userTitle.setUserId(userId);
-        userTitle.setTitleId(title.getId());
-        userTitle.setIsWearing(wearing ? 1 : 0);
-        userTitle.setGrantSource(2);
-        userTitle.setGrantRemark(normalize(request.getRemark()));
-        userTitle.setGrantedBy(adminUserId);
-        userTitle.setExpiredAt(request.getExpiredAt());
-        sysUserTitleMapper.insert(userTitle);
-        adminOperationLogService.record(adminUserId, 6, userTitle.getId(), "GRANT_TITLE", null, userTitle, request.getRemark());
+                .last("limit 1"));
+        SysUserTitle userTitle = userTitleDisplayService.grantAdminTitle(
+                userId,
+                request.getTitleId(),
+                adminUserId,
+                request.getRemark(),
+                request.getExpiredAt()
+        );
+        adminOperationLogService.record(adminUserId, 6, userTitle.getId(), "GRANT_TITLE", before == null ? null : copy(before), userTitle, request.getRemark());
         return userTitle;
     }
 
@@ -108,7 +99,7 @@ public class AdminTitleServiceImpl implements AdminTitleService {
             throw new BusinessException("用户头衔记录不存在");
         }
         SysUserTitle before = copy(userTitle);
-        sysUserTitleMapper.deleteById(userTitleId);
+        userTitleDisplayService.revokeTitleAndFallback(userTitleId);
         adminOperationLogService.record(adminUserId, 6, userTitleId, "REVOKE_TITLE", before, null, reason);
     }
 
@@ -118,19 +109,6 @@ public class AdminTitleServiceImpl implements AdminTitleService {
             throw new BusinessException("头衔不存在或已停用");
         }
         return title;
-    }
-
-    private void clearWearingForUser(Long userId) {
-        List<SysUserTitle> wearingTitles = sysUserTitleMapper.selectList(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysUserTitle>()
-                .eq(SysUserTitle::getUserId, userId)
-                .eq(SysUserTitle::getIsWearing, 1));
-        if (wearingTitles.isEmpty()) {
-            return;
-        }
-        for (SysUserTitle item : wearingTitles) {
-            item.setIsWearing(0);
-            sysUserTitleMapper.updateById(item);
-        }
     }
 
     private Map<Long, SysUser> loadUserMap(Set<Long> userIds) {

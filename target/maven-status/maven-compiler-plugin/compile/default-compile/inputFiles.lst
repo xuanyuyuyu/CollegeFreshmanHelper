@@ -91,11 +91,13 @@
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/MyCenterService.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/UserService.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/UserStatsService.java
+/Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/UserStatsSyncService.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/UserTitleDisplayService.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/UserTitleMetrics.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/impl/MyCenterServiceImpl.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/impl/UserServiceImpl.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/impl/UserStatsServiceImpl.java
+/Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/service/impl/UserStatsSyncServiceImpl.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/vo/MyCenterLikeDetailVO.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/vo/MyCenterLikeVO.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/user/vo/MyCenterLikedItemVO.java

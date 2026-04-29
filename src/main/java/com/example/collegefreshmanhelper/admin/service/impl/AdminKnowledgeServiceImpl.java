@@ -11,6 +11,7 @@ import com.example.collegefreshmanhelper.common.exception.BusinessException;
 import com.example.collegefreshmanhelper.common.model.PageResult;
 import com.example.collegefreshmanhelper.user.entity.SysUser;
 import com.example.collegefreshmanhelper.user.service.UserService;
+import com.example.collegefreshmanhelper.user.service.UserStatsSyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ public class AdminKnowledgeServiceImpl implements AdminKnowledgeService {
     private final KnowledgeQaTraceMapper knowledgeQaTraceMapper;
     private final UserService userService;
     private final AdminOperationLogService adminOperationLogService;
+    private final UserStatsSyncService userStatsSyncService;
 
     @Override
     public PageResult<AdminKnowledgeVO> pageKnowledge(long pageNum, long pageSize, String keyword, Integer status, String category) {
@@ -74,6 +76,7 @@ public class AdminKnowledgeServiceImpl implements AdminKnowledgeService {
         trace.setStatus(1);
         trace.setContextText(buildContext(trace.getQuestionText(), trace.getAnswerText()));
         knowledgeQaTraceMapper.insert(trace);
+        syncContributorStats(trace.getContributorUserId());
         adminOperationLogService.record(adminUserId, 4, trace.getId(), "MANUAL_KB_ADD", null, trace, "管理员手动录入知识库");
         return trace;
     }
@@ -94,6 +97,7 @@ public class AdminKnowledgeServiceImpl implements AdminKnowledgeService {
             trace.setFailReason(null);
         }
         knowledgeQaTraceMapper.updateById(trace);
+        syncContributorStats(trace.getContributorUserId());
         adminOperationLogService.record(adminUserId, 4, knowledgeId, "UPDATE_KB_STATUS", before, trace, reason);
         return trace;
     }
@@ -150,6 +154,13 @@ public class AdminKnowledgeServiceImpl implements AdminKnowledgeService {
 
     private int defaultZero(Integer value) {
         return value == null ? 0 : value;
+    }
+
+    private void syncContributorStats(Long contributorUserId) {
+        if (contributorUserId == null) {
+            return;
+        }
+        userStatsSyncService.syncKnowledgeStatsForUsers(Collections.singleton(contributorUserId));
     }
 
     private KnowledgeQaTrace copy(KnowledgeQaTrace source) {

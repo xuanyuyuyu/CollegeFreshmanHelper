@@ -1,5 +1,6 @@
 com/example/collegefreshmanhelper/admin/dto/AdminGrantTitleRequest.class
 com/example/collegefreshmanhelper/admin/service/impl/AdminKnowledgeServiceImpl.class
+com/example/collegefreshmanhelper/user/service/UserStatsSyncService.class
 com/example/collegefreshmanhelper/user/service/UserTitleDisplayService.class
 com/example/collegefreshmanhelper/admin/entity/KnowledgeQaTrace.class
 com/example/collegefreshmanhelper/user/entity/UserStats.class
@@ -29,6 +30,7 @@ com/example/collegefreshmanhelper/user/controller/UserController.class
 com/example/collegefreshmanhelper/auth/service/AuthService.class
 com/example/collegefreshmanhelper/admin/vo/AdminReplyVO.class
 com/example/collegefreshmanhelper/admin/controller/AdminContentController.class
+com/example/collegefreshmanhelper/user/service/impl/UserStatsSyncServiceImpl.class
 com/example/collegefreshmanhelper/forum/mapper/ForumPostImageMapper.class
 com/example/collegefreshmanhelper/admin/controller/AdminOperationLogController.class
 com/example/collegefreshmanhelper/admin/dto/AdminVisibilityUpdateRequest.class

@@ -86,6 +86,7 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
                 .setSql("reply_count = reply_count + 1")
                 .set(ForumPost::getLastReplyAt, LocalDateTime.now())
                 .update();
+        userTitleDisplayService.syncUserTitle(currentUserId);
 
         return reply;
     }
@@ -122,6 +123,7 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
                     .set(ForumReply::getManualDeleteReason, USER_DELETE_REASON)
                     .update();
             decrementPostReplyCount(postId, deleteIds.size());
+            userTitleDisplayService.syncUserTitle(currentUserId);
             return;
         }
 
@@ -139,6 +141,7 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
                 .eq(ForumReply::getDeleted, 0)
                 .setSql("child_count = GREATEST(IFNULL(child_count, 0) - 1, 0)")
                 .update();
+        userTitleDisplayService.syncUserTitle(currentUserId);
     }
 
     private ResolvedReplyTarget resolveReplyTarget(Long postId, ForumReplyCreateRequest request) {
@@ -188,6 +191,7 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
         }
 
         Map<Long, SysUser> userMap = loadReplyUsers(replies);
+        userTitleDisplayService.syncUserTitles(userMap.keySet());
         Map<Long, UserStats> statsMap = loadReplyStats(userMap.keySet());
         Map<Long, UserTitleMetrics> metricsMap = userTitleDisplayService.buildMetricsMap(userMap.keySet(), statsMap);
         Map<Long, String> titleMap = userTitleDisplayService.findWearingTitles(userMap.keySet());

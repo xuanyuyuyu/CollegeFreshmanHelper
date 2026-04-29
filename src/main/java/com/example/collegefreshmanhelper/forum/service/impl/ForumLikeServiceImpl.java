@@ -11,6 +11,7 @@ import com.example.collegefreshmanhelper.forum.mapper.ForumReplyMapper;
 import com.example.collegefreshmanhelper.forum.service.ForumLikeService;
 import com.example.collegefreshmanhelper.forum.vo.LikeToggleVO;
 import com.example.collegefreshmanhelper.user.service.UserService;
+import com.example.collegefreshmanhelper.user.service.UserTitleDisplayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -41,6 +42,7 @@ public class ForumLikeServiceImpl implements ForumLikeService {
     private final ForumPostMapper forumPostMapper;
     private final ForumReplyMapper forumReplyMapper;
     private final UserService userService;
+    private final UserTitleDisplayService userTitleDisplayService;
 
     @Override
     public LikeToggleVO likePost(Long postId, Long currentUserId) {
@@ -94,6 +96,7 @@ public class ForumLikeServiceImpl implements ForumLikeService {
         upsertLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_REPLY, replyId, true, record);
         markReplyDirty(replyId);
         stringRedisTemplate.expire(key, 90, TimeUnit.DAYS);
+        userTitleDisplayService.syncUserTitle(reply.getUserId());
         return new LikeToggleVO(true, getReplyLikeCount(replyId));
     }
 
@@ -111,6 +114,7 @@ public class ForumLikeServiceImpl implements ForumLikeService {
         }
         upsertLikeRecord(currentUserId, ForumLikeRecord.TARGET_TYPE_REPLY, replyId, false, record);
         markReplyDirty(replyId);
+        userTitleDisplayService.syncUserTitle(reply.getUserId());
         return new LikeToggleVO(false, getReplyLikeCount(replyId));
     }
 
