@@ -134,7 +134,10 @@
                         </div>
                         <div class="mt-3 text-sm leading-7 text-slate-600">{{ post.contentPreview || '暂无正文摘要。' }}</div>
                       </div>
-                      <el-button class="!border-brand/15 !text-brand" @click="goToPost(post.id)">查看详情</el-button>
+                      <div class="flex flex-wrap gap-2">
+                        <el-button class="!border-brand/15 !text-brand" @click="goToPost(post.id)">查看详情</el-button>
+                        <el-button class="!border-rose-200 !text-rose-600" @click="confirmDeleteMyPost(post)">删除帖子</el-button>
+                      </div>
                     </div>
                     <div class="mt-4 flex flex-wrap gap-6 text-sm text-slate-500">
                       <span>标签 {{ post.tags || '未分类' }}</span>
@@ -144,18 +147,6 @@
                   </div>
                   <div v-if="!loading.posts && !myPosts.length" class="rounded-[20px] bg-white p-6 text-sm text-slate-500">
                     你还没有发布帖子。
-                  </div>
-                  <div class="flex justify-end">
-                    <el-pagination
-                      background
-                      layout="total, sizes, prev, pager, next"
-                      :current-page="postPagination.pageNum"
-                      :page-size="postPagination.pageSize"
-                      :page-sizes="PAGE_SIZE_OPTIONS"
-                      :total="postPagination.total"
-                      @current-change="loadPosts"
-                      @size-change="handlePostPageSizeChange"
-                    />
                   </div>
                 </div>
               </el-tab-pane>
@@ -174,7 +165,10 @@
                           {{ reply.contentPreview || '暂无回复内容。' }}
                         </div>
                       </div>
-                      <el-button class="!border-brand/15 !text-brand" @click="goToPost(reply.postId)">去原帖</el-button>
+                      <div class="flex flex-wrap gap-2">
+                        <el-button class="!border-brand/15 !text-brand" @click="goToPost(reply.postId)">去原帖</el-button>
+                        <el-button class="!border-rose-200 !text-rose-600" @click="confirmDeleteMyReply(reply)">删除回复</el-button>
+                      </div>
                     </div>
                     <div class="mt-4 flex flex-wrap gap-6 text-sm text-slate-500">
                       <span>点赞 {{ reply.likeCount || 0 }}</span>
@@ -183,18 +177,6 @@
                   </div>
                   <div v-if="!loading.replies && !myReplies.length" class="rounded-[20px] bg-white p-6 text-sm text-slate-500">
                     你还没有发表回复。
-                  </div>
-                  <div class="flex justify-end">
-                    <el-pagination
-                      background
-                      layout="total, sizes, prev, pager, next"
-                      :current-page="replyPagination.pageNum"
-                      :page-size="replyPagination.pageSize"
-                      :page-sizes="PAGE_SIZE_OPTIONS"
-                      :total="replyPagination.total"
-                      @current-change="loadReplies"
-                      @size-change="handleReplyPageSizeChange"
-                    />
                   </div>
                 </div>
               </el-tab-pane>
@@ -237,18 +219,6 @@
                   <div v-if="!loading.likedItems && !myLikedItems.length" class="rounded-[20px] bg-white p-6 text-sm text-slate-500">
                     你还没有点赞过帖子或回复。
                   </div>
-                  <div class="flex justify-end">
-                    <el-pagination
-                      background
-                      layout="total, sizes, prev, pager, next"
-                      :current-page="likedPagination.pageNum"
-                      :page-size="likedPagination.pageSize"
-                      :page-sizes="PAGE_SIZE_OPTIONS"
-                      :total="likedPagination.total"
-                      @current-change="loadLikedItems"
-                      @size-change="handleLikedPageSizeChange"
-                    />
-                  </div>
                 </div>
               </el-tab-pane>
 
@@ -286,7 +256,7 @@
                     <el-button
                       class="!border-brand/15 !text-brand"
                       :loading="loading.likeDetails"
-                      @click="loadLikeDetails(likeDetailPagination.pageNum)"
+                      @click="loadLikeDetails"
                     >
                       刷新明细
                     </el-button>
@@ -329,19 +299,6 @@
                     <div v-if="!loading.likeDetails && !likeDetails.length" class="rounded-[20px] bg-slate-50 p-6 text-sm text-slate-500">
                       你目前还没有获赞明细，先去论坛参与发帖或答疑吧。
                     </div>
-                  </div>
-
-                  <div class="mt-5 flex justify-end">
-                    <el-pagination
-                      background
-                      layout="total, sizes, prev, pager, next"
-                      :current-page="likeDetailPagination.pageNum"
-                      :page-size="likeDetailPagination.pageSize"
-                      :page-sizes="PAGE_SIZE_OPTIONS"
-                      :total="likeDetailPagination.total"
-                      @current-change="loadLikeDetails"
-                      @size-change="handleLikeDetailPageSizeChange"
-                    />
                   </div>
                 </div>
               </el-tab-pane>
@@ -414,14 +371,15 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import MainLayout from '../layouts/MainLayout.vue'
+import { deletePost as deleteOwnPost, deleteReply as deleteOwnReply } from '../api/forum'
 import { fetchMyLikeDetails, fetchMyLikedItems, fetchMyLikes, fetchMyPosts, fetchMyReplies, fetchMySummary, updateMyAvatar, updateMyProfile } from '../api/me'
 import { useAppShell } from '../stores/appShell'
 
 const router = useRouter()
 const { currentUser, ensureShellReady, openAuth, refreshCurrentUser } = useAppShell()
-const PAGE_SIZE_OPTIONS = [5, 10, 20]
+const LIST_FETCH_SIZE = 100
 const activeTab = ref('posts')
 const summary = ref(null)
 const likesData = ref(null)
@@ -438,26 +396,6 @@ const loading = reactive({
   likes: false,
   likedItems: false,
   likeDetails: false
-})
-const likeDetailPagination = reactive({
-  pageNum: 1,
-  pageSize: 5,
-  total: 0
-})
-const postPagination = reactive({
-  pageNum: 1,
-  pageSize: 5,
-  total: 0
-})
-const replyPagination = reactive({
-  pageNum: 1,
-  pageSize: 5,
-  total: 0
-})
-const likedPagination = reactive({
-  pageNum: 1,
-  pageSize: 5,
-  total: 0
 })
 const profileSubmitting = ref(false)
 const avatarSubmitting = ref(false)
@@ -547,14 +485,11 @@ async function loadSummary() {
   }
 }
 
-async function loadPosts(pageNum = postPagination.pageNum) {
+async function loadPosts() {
   loading.posts = true
   try {
-    const page = await fetchMyPosts({ pageNum, pageSize: postPagination.pageSize })
+    const page = await fetchMyPosts({ pageNum: 1, pageSize: LIST_FETCH_SIZE })
     myPosts.value = page.records || []
-    postPagination.pageNum = page.pageNum || pageNum
-    postPagination.pageSize = page.pageSize || postPagination.pageSize
-    postPagination.total = page.total || 0
   } catch (error) {
     ElMessage.error(error.message)
   } finally {
@@ -562,14 +497,11 @@ async function loadPosts(pageNum = postPagination.pageNum) {
   }
 }
 
-async function loadReplies(pageNum = replyPagination.pageNum) {
+async function loadReplies() {
   loading.replies = true
   try {
-    const page = await fetchMyReplies({ pageNum, pageSize: replyPagination.pageSize })
+    const page = await fetchMyReplies({ pageNum: 1, pageSize: LIST_FETCH_SIZE })
     myReplies.value = page.records || []
-    replyPagination.pageNum = page.pageNum || pageNum
-    replyPagination.pageSize = page.pageSize || replyPagination.pageSize
-    replyPagination.total = page.total || 0
   } catch (error) {
     ElMessage.error(error.message)
   } finally {
@@ -577,14 +509,11 @@ async function loadReplies(pageNum = replyPagination.pageNum) {
   }
 }
 
-async function loadLikedItems(pageNum = likedPagination.pageNum) {
+async function loadLikedItems() {
   loading.likedItems = true
   try {
-    const page = await fetchMyLikedItems({ pageNum, pageSize: likedPagination.pageSize })
+    const page = await fetchMyLikedItems({ pageNum: 1, pageSize: LIST_FETCH_SIZE })
     myLikedItems.value = page.records || []
-    likedPagination.pageNum = page.pageNum || pageNum
-    likedPagination.pageSize = page.pageSize || likedPagination.pageSize
-    likedPagination.total = page.total || 0
   } catch (error) {
     ElMessage.error(error.message)
   } finally {
@@ -603,14 +532,11 @@ async function loadLikes() {
   }
 }
 
-async function loadLikeDetails(pageNum = 1) {
+async function loadLikeDetails() {
   loading.likeDetails = true
   try {
-    const page = await fetchMyLikeDetails({ pageNum, pageSize: likeDetailPagination.pageSize })
+    const page = await fetchMyLikeDetails({ pageNum: 1, pageSize: LIST_FETCH_SIZE })
     likeDetails.value = page.records || []
-    likeDetailPagination.pageNum = page.pageNum || pageNum
-    likeDetailPagination.pageSize = page.pageSize || likeDetailPagination.pageSize
-    likeDetailPagination.total = page.total || 0
   } catch (error) {
     ElMessage.error(error.message)
   } finally {
@@ -620,27 +546,44 @@ async function loadLikeDetails(pageNum = 1) {
 
 async function reloadAll() {
   if (!currentUser.value) return
-  await Promise.all([loadSummary(), loadPosts(1), loadReplies(1), loadLikedItems(1), loadLikes(), loadLikeDetails(1)])
+  await Promise.all([loadSummary(), loadPosts(), loadReplies(), loadLikedItems(), loadLikes(), loadLikeDetails()])
 }
 
-function handlePostPageSizeChange(pageSize) {
-  postPagination.pageSize = pageSize
-  loadPosts(1)
+async function confirmDeleteMyPost(post) {
+  try {
+    await ElMessageBox.confirm('确认删除这条帖子？删除后帖子及其全部回复都会被移除。', '删除帖子', {
+      confirmButtonText: '确认删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await deleteOwnPost(post.id)
+    ElMessage.success('帖子已删除')
+    await reloadAll()
+  } catch (error) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error.message || '删除失败')
+  }
 }
 
-function handleReplyPageSizeChange(pageSize) {
-  replyPagination.pageSize = pageSize
-  loadReplies(1)
-}
-
-function handleLikedPageSizeChange(pageSize) {
-  likedPagination.pageSize = pageSize
-  loadLikedItems(1)
-}
-
-function handleLikeDetailPageSizeChange(pageSize) {
-  likeDetailPagination.pageSize = pageSize
-  loadLikeDetails(1)
+async function confirmDeleteMyReply(reply) {
+  try {
+    const isRootReply = !reply.parentId
+    await ElMessageBox.confirm(
+      isRootReply ? '确认删除这条主楼回复？该楼层下的所有子回复也会一起删除。' : '确认删除这条回复？',
+      '删除回复',
+      {
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    await deleteOwnReply(reply.postId, reply.id)
+    ElMessage.success('回复已删除')
+    await reloadAll()
+  } catch (error) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error.message || '删除失败')
+  }
 }
 
 async function submitProfile() {
@@ -700,14 +643,6 @@ watch(
       myLikedItems.value = []
       myPosts.value = []
       myReplies.value = []
-      postPagination.pageNum = 1
-      postPagination.total = 0
-      replyPagination.pageNum = 1
-      replyPagination.total = 0
-      likedPagination.pageNum = 1
-      likedPagination.total = 0
-      likeDetailPagination.pageNum = 1
-      likeDetailPagination.total = 0
     }
   }
 )

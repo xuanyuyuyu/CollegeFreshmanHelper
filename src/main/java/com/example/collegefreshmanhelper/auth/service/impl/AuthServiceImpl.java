@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -28,16 +30,22 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SysUser register(RegisterRequest request) {
-        if (userService.findByUsername(request.getUsername()) != null) {
-            throw new BusinessException("用户名已存在");
+        validateUsername(request.getUsername());
+        validateRole(request.getRole());
+
+        String username = request.getUsername().trim();
+        String nickname = request.getNickname().trim();
+        if (userService.findByUsername(username) != null) {
+            throw new BusinessException("username 账号已存在");
         }
 
         SysUser user = new SysUser();
-        user.setUsername(request.getUsername().trim());
+        user.setUsername(username);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setNickname(request.getNickname().trim());
+        user.setNickname(nickname);
         user.setGender(0);
-        user.setRole(1);
+        user.setRole(request.getRole());
+        user.setAdmissionYear(request.getAdmissionYear());
         user.setPoints(0);
         user.setStatus(1);
         user.setDeleted(0);
@@ -52,18 +60,22 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginVO login(LoginRequest request) {
-        SysUser user = userService.findByUsername(request.getUsername());
+        validateUsername(request.getUsername());
+
+        SysUser user = userService.findByUsername(request.getUsername().trim());
         if (user == null || Integer.valueOf(1).equals(user.getDeleted())) {
-            throw new BusinessException("用户名或密码错误");
+            throw new BusinessException("账号或密码错误");
         }
         if (!Integer.valueOf(1).equals(user.getStatus())) {
             throw new BusinessException("账号已被禁用");
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new BusinessException("用户名或密码错误");
+            throw new BusinessException("账号或密码错误");
         }
 
         StpUtil.login(user.getId());
+        user.setLastLoginAt(LocalDateTime.now());
+        userService.updateById(user);
         return new LoginVO(
                 StpUtil.getTokenName(),
                 StpUtil.getTokenValue(),
@@ -80,5 +92,17 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout() {
         StpUtil.logout();
+    }
+
+    private void validateUsername(String username) {
+        if (username != null && !username.equals(username.trim())) {
+            throw new BusinessException("username 账号不能包含前后空格");
+        }
+    }
+
+    private void validateRole(Integer role) {
+        if (!Integer.valueOf(1).equals(role) && !Integer.valueOf(2).equals(role)) {
+            throw new BusinessException("role 请选择新生或老生");
+        }
     }
 }

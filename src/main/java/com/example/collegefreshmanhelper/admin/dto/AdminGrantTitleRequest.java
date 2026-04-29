@@ -1,5 +1,6 @@
 package com.example.collegefreshmanhelper.admin.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -9,8 +10,9 @@ import java.time.LocalDateTime;
 @Data
 public class AdminGrantTitleRequest {
 
-    @NotNull(message = "用户ID不能为空")
-    private Long userId;
+    @NotBlank(message = "账号不能为空")
+    @Size(max = 32, message = "账号长度不能超过32位")
+    private String username;
 
     @NotNull(message = "头衔ID不能为空")
     private Long titleId;

@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumReply> implements ForumReplyService {
 
+    private static final String USER_DELETE_REASON = "用户自行删除";
+
     private final ForumPostService forumPostService;
     private final ForumLikeService forumLikeService;
     private final UserService userService;
@@ -83,6 +85,57 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
                 .update();
 
         return reply;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteOwnReply(Long postId, Long currentUserId, Long replyId) {
+        userService.getActiveUserById(currentUserId);
+        ForumReply reply = getById(replyId);
+        if (reply == null || Integer.valueOf(1).equals(reply.getDeleted()) || !Objects.equals(reply.getPostId(), postId)) {
+            throw new BusinessException("回复不存在");
+        }
+        if (!Objects.equals(reply.getUserId(), currentUserId)) {
+            throw new BusinessException("只能删除自己发布的回复");
+        }
+
+        boolean isRootReply = reply.getParentId() == null || reply.getParentId() == 0;
+        if (isRootReply) {
+            List<Long> deleteIds = lambdaQuery()
+                    .eq(ForumReply::getPostId, postId)
+                    .eq(ForumReply::getDeleted, 0)
+                    .and(wrapper -> wrapper.eq(ForumReply::getId, replyId).or().eq(ForumReply::getParentId, replyId))
+                    .list()
+                    .stream()
+                    .map(ForumReply::getId)
+                    .toList();
+            if (deleteIds.isEmpty()) {
+                throw new BusinessException("回复不存在");
+            }
+            lambdaUpdate()
+                    .in(ForumReply::getId, deleteIds)
+                    .set(ForumReply::getDeleted, 1)
+                    .set(ForumReply::getVisibility, 0)
+                    .set(ForumReply::getManualDeleteReason, USER_DELETE_REASON)
+                    .update();
+            decrementPostReplyCount(postId, deleteIds.size());
+            return;
+        }
+
+        lambdaUpdate()
+                .eq(ForumReply::getId, replyId)
+                .eq(ForumReply::getDeleted, 0)
+                .set(ForumReply::getDeleted, 1)
+                .set(ForumReply::getVisibility, 0)
+                .set(ForumReply::getManualDeleteReason, USER_DELETE_REASON)
+                .update();
+
+        decrementPostReplyCount(postId, 1);
+        lambdaUpdate()
+                .eq(ForumReply::getId, reply.getParentId())
+                .eq(ForumReply::getDeleted, 0)
+                .setSql("child_count = GREATEST(IFNULL(child_count, 0) - 1, 0)")
+                .update();
     }
 
     private ResolvedReplyTarget resolveReplyTarget(Long postId, ForumReplyCreateRequest request) {
@@ -230,6 +283,13 @@ public class ForumReplyServiceImpl extends ServiceImpl<ForumReplyMapper, ForumRe
             return "活跃伙伴";
         }
         return "新生伙伴";
+    }
+
+    private void decrementPostReplyCount(Long postId, int count) {
+        forumPostService.lambdaUpdate()
+                .eq(ForumPost::getId, postId)
+                .setSql("reply_count = GREATEST(IFNULL(reply_count, 0) - " + count + ", 0)")
+                .update();
     }
 
     private int defaultZero(Integer value) {

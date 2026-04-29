@@ -57,6 +57,14 @@
               {{ postDetail.liked ? '已赞' : '点赞' }} {{ postDetail.post.likeCount || 0 }}
             </button>
             <span>浏览 {{ postDetail.post.viewCount || 0 }}</span>
+            <button
+              v-if="canDeletePost"
+              type="button"
+              class="inline-flex items-center gap-1.5 text-rose-500 transition hover:text-rose-600"
+              @click="confirmDeletePost"
+            >
+              删除帖子
+            </button>
           </div>
         </article>
 
@@ -148,6 +156,14 @@
                       </svg>
                       {{ thread.rootReply.liked ? '已赞' : '点赞' }} {{ thread.rootReply.likeCount || 0 }}
                     </button>
+                    <button
+                      v-if="canDeleteReply(thread.rootReply)"
+                      type="button"
+                      class="inline-flex items-center gap-1.5 text-rose-500 transition hover:text-rose-600"
+                      @click="confirmDeleteReply(thread.rootReply)"
+                    >
+                      删除回复
+                    </button>
                   </div>
 
                   <div v-if="isReplyingTo(thread.rootReply.id)" class="mt-5 rounded-[22px] border border-brand/10 bg-[linear-gradient(180deg,#fff_0%,#fbf7f6_100%)] p-4">
@@ -219,6 +235,14 @@
                                 </svg>
                                 {{ child.liked ? '已赞' : '点赞' }} {{ child.likeCount || 0 }}
                               </button>
+                              <button
+                                v-if="canDeleteReply(child)"
+                                type="button"
+                                class="inline-flex items-center gap-1.5 text-rose-500 transition hover:text-rose-600"
+                                @click="confirmDeleteReply(child)"
+                              >
+                                删除回复
+                              </button>
                             </div>
 
                             <div v-if="isReplyingTo(child.id)" class="mt-4 rounded-[18px] border border-brand/10 bg-[linear-gradient(180deg,#fff_0%,#fbf7f6_100%)] p-4">
@@ -267,9 +291,9 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import MainLayout from '../layouts/MainLayout.vue'
-import { createReply, fetchPostDetail, fetchPostReplies, likePost, likeReply, unlikePost, unlikeReply } from '../api/forum'
+import { createReply, deletePost, deleteReply, fetchPostDetail, fetchPostReplies, likePost, likeReply, unlikePost, unlikeReply } from '../api/forum'
 import { useAppShell } from '../stores/appShell'
 
 const route = useRoute()
@@ -291,6 +315,9 @@ const replyTarget = reactive({
 })
 
 const postId = computed(() => route.params.postId)
+const canDeletePost = computed(() =>
+  Number(currentUser.value?.id) > 0 && Number(currentUser.value?.id) === Number(postDetail.value?.post?.userId)
+)
 const replyTargetUser = computed(() => replyTarget.userNickname || '')
 const replyTargetLabel = computed(() => (replyTarget.userNickname ? '回复指定楼层' : '回复主楼'))
 const replyPlaceholder = computed(() => (replyTarget.userNickname ? `回复 ${replyTarget.userNickname}...` : '写下你的回复内容...'))
@@ -330,6 +357,10 @@ function prepareReply(rootReply, targetReply) {
   replyTarget.parentId = rootReply.id
   replyTarget.replyToReplyId = targetReply.id
   replyTarget.userNickname = targetReply.userNickname || `用户${targetReply.userId}`
+}
+
+function canDeleteReply(reply) {
+  return Number(currentUser.value?.id) > 0 && Number(currentUser.value?.id) === Number(reply?.userId)
 }
 
 async function loadPostDetailData() {
@@ -426,6 +457,44 @@ async function toggleReplyLike(reply) {
     reply.likeCount = result.likeCount
   } catch (error) {
     ElMessage.error(error.message)
+  }
+}
+
+async function confirmDeletePost() {
+  try {
+    await ElMessageBox.confirm('确认删除这条帖子？删除后帖子及其全部回复都会被移除。', '删除帖子', {
+      confirmButtonText: '确认删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await deletePost(postId.value)
+    ElMessage.success('帖子已删除')
+    router.push('/forum')
+  } catch (error) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error.message || '删除失败')
+  }
+}
+
+async function confirmDeleteReply(reply) {
+  try {
+    const isRootReply = !reply.parentId
+    await ElMessageBox.confirm(
+      isRootReply ? '确认删除这条主楼回复？该楼层下的所有子回复也会一起删除。' : '确认删除这条回复？',
+      '删除回复',
+      {
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    await deleteReply(postId.value, reply.id)
+    resetReplyTarget()
+    ElMessage.success('回复已删除')
+    await Promise.all([refreshPostMeta(), loadReplies()])
+  } catch (error) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error.message || '删除失败')
   }
 }
 

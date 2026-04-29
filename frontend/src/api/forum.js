@@ -12,6 +12,10 @@ export function createPost(payload) {
   return http.post('/api/posts', payload)
 }
 
+export function deletePost(postId) {
+  return http.delete(`/api/posts/${postId}`)
+}
+
 export function likePost(postId) {
   return http.post(`/api/posts/${postId}/like`)
 }
@@ -26,6 +30,10 @@ export function fetchPostReplies(postId) {
 
 export function createReply(postId, payload) {
   return http.post(`/api/posts/${postId}/replies`, payload)
+}
+
+export function deleteReply(postId, replyId) {
+  return http.delete(`/api/posts/${postId}/replies/${replyId}`)
 }
 
 export function likeReply(postId, replyId) {

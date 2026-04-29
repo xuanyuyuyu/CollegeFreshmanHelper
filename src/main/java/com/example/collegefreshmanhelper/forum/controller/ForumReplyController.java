@@ -37,6 +37,15 @@ public class ForumReplyController {
         return ApiResponse.success(forumReplyService.createReply(postId, LoginUserContext.getCurrentUserId(), request));
     }
 
+    @SaCheckLogin
+    @DeleteMapping("/{replyId}")
+    public ApiResponse<Void> deleteReply(
+            @PathVariable Long postId,
+            @PathVariable Long replyId) {
+        forumReplyService.deleteOwnReply(postId, LoginUserContext.getCurrentUserId(), replyId);
+        return ApiResponse.success();
+    }
+
     @GetMapping
     public ApiResponse<List<ForumReplyThreadVO>> listReplies(@PathVariable Long postId) {
         return ApiResponse.success(forumReplyService.listPublishedRepliesByPostId(postId, LoginUserContext.getCurrentUserIdOrNull()));

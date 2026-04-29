@@ -48,6 +48,7 @@
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/common/config/JacksonConfig.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/common/config/MybatisPlusConfig.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/common/config/SecurityConfig.java
+/Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/common/config/StaticResourceConfig.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/common/entity/BaseEntity.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/common/exception/BusinessException.java
 /Users/xuan/IdeaProjects/CollegeFreshmanHelper/src/main/java/com/example/collegefreshmanhelper/common/handler/GlobalExceptionHandler.java

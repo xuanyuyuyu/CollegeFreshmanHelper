@@ -64,6 +64,7 @@ com/example/collegefreshmanhelper/user/service/UserService.class
 com/example/collegefreshmanhelper/admin/entity/SysTitle.class
 com/example/collegefreshmanhelper/admin/controller/AdminKnowledgeController.class
 com/example/collegefreshmanhelper/forum/vo/LikeToggleVO.class
+com/example/collegefreshmanhelper/common/config/StaticResourceConfig.class
 com/example/collegefreshmanhelper/admin/mapper/KnowledgeQaTraceMapper.class
 com/example/collegefreshmanhelper/admin/vo/AdminTitleVO.class
 com/example/collegefreshmanhelper/forum/service/ForumReplyService.class

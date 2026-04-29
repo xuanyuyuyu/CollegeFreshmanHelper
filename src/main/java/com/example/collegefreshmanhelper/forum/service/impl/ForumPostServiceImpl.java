@@ -6,7 +6,9 @@ import com.example.collegefreshmanhelper.common.exception.BusinessException;
 import com.example.collegefreshmanhelper.forum.dto.ForumPostCreateRequest;
 import com.example.collegefreshmanhelper.forum.entity.ForumPost;
 import com.example.collegefreshmanhelper.forum.entity.ForumPostImage;
+import com.example.collegefreshmanhelper.forum.entity.ForumReply;
 import com.example.collegefreshmanhelper.forum.mapper.ForumPostMapper;
+import com.example.collegefreshmanhelper.forum.mapper.ForumReplyMapper;
 import com.example.collegefreshmanhelper.forum.service.ForumLikeService;
 import com.example.collegefreshmanhelper.forum.service.ForumPostService;
 import com.example.collegefreshmanhelper.forum.vo.ForumAuthorVO;
@@ -26,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,8 +39,10 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
 
     private static final long VIEW_DEDUP_HOURS = 12L;
     private static final String POST_VIEW_USER_KEY_PREFIX = "forum:view:post:user:";
+    private static final String USER_DELETE_REASON = "用户自行删除";
 
     private final ForumPostImageServiceImpl forumPostImageService;
+    private final ForumReplyMapper forumReplyMapper;
     private final ForumLikeService forumLikeService;
     private final UserService userService;
     private final UserStatsService userStatsService;
@@ -82,6 +87,45 @@ public class ForumPostServiceImpl extends ServiceImpl<ForumPostMapper, ForumPost
             }
         }
         return post;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteOwnPost(Long currentUserId, Long postId) {
+        userService.getActiveUserById(currentUserId);
+        ForumPost post = getById(postId);
+        if (post == null || Integer.valueOf(1).equals(post.getDeleted())) {
+            throw new BusinessException("帖子不存在");
+        }
+        if (!Objects.equals(post.getUserId(), currentUserId)) {
+            throw new BusinessException("只能删除自己发布的帖子");
+        }
+
+        lambdaUpdate()
+                .eq(ForumPost::getId, postId)
+                .eq(ForumPost::getDeleted, 0)
+                .set(ForumPost::getDeleted, 1)
+                .set(ForumPost::getVisibility, 0)
+                .set(ForumPost::getManualDeleteReason, USER_DELETE_REASON)
+                .update();
+
+        List<Long> replyIds = forumReplyMapper.selectList(
+                        com.baomidou.mybatisplus.core.toolkit.Wrappers.lambdaQuery(ForumReply.class)
+                                .eq(ForumReply::getPostId, postId)
+                                .eq(ForumReply::getDeleted, 0)
+                                .orderByAsc(ForumReply::getId))
+                .stream()
+                .map(ForumReply::getId)
+                .toList();
+        if (!replyIds.isEmpty()) {
+            com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper<ForumReply> wrapper =
+                    com.baomidou.mybatisplus.core.toolkit.Wrappers.lambdaUpdate(ForumReply.class)
+                            .in(ForumReply::getId, replyIds)
+                            .set(ForumReply::getDeleted, 1)
+                            .set(ForumReply::getVisibility, 0)
+                            .set(ForumReply::getManualDeleteReason, USER_DELETE_REASON);
+            forumReplyMapper.update(null, wrapper);
+        }
     }
 
     @Override

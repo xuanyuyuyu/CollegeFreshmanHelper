@@ -18,7 +18,10 @@ const loginForm = reactive({
 const registerForm = reactive({
   username: '',
   password: '',
-  nickname: ''
+  confirmPassword: '',
+  nickname: '',
+  role: 1,
+  admissionYear: 2026
 })
 
 const currentUserRoleLabel = computed(() => {
@@ -71,36 +74,37 @@ function openAuth(mode = 'login') {
   authDialogVisible.value = true
 }
 
-async function submitLogin() {
+async function submitLogin(payload) {
   loginSubmitting.value = true
   try {
-    const result = await login(loginForm)
+    const result = await login(payload)
     const tokenValue = result.tokenPrefix ? `${result.tokenPrefix} ${result.tokenValue}` : result.tokenValue
     localStorage.setItem('cfh_token', tokenValue)
     currentUser.value = result.user
     authDialogVisible.value = false
     loginForm.password = ''
     ElMessage.success(`登录成功，欢迎你 ${result.user.nickname}`)
-  } catch (error) {
-    ElMessage.error(error.message)
+    return result
   } finally {
     loginSubmitting.value = false
   }
 }
 
-async function submitRegister() {
+async function submitRegister(payload) {
   registerSubmitting.value = true
   try {
-    const user = await register(registerForm)
-    ElMessage.success(`注册成功：${user.nickname}`)
-    loginForm.username = registerForm.username
-    loginForm.password = registerForm.password
+    const user = await register(payload)
+    ElMessage.success(`注册成功：${user.nickname}，请重新输入密码登录`)
+    loginForm.username = user.username || registerForm.username
+    loginForm.password = ''
     registerForm.username = ''
     registerForm.password = ''
+    registerForm.confirmPassword = ''
     registerForm.nickname = ''
+    registerForm.role = 1
+    registerForm.admissionYear = 2026
     authMode.value = 'login'
-  } catch (error) {
-    ElMessage.error(error.message)
+    return user
   } finally {
     registerSubmitting.value = false
   }

@@ -55,12 +55,12 @@
 
                 <div class="space-y-4">
                   <div class="flex flex-wrap gap-3 rounded-[24px] border border-slate-100 bg-slate-50/70 p-4">
-                    <el-input v-model="adminFilters.keyword" class="max-w-xs" clearable placeholder="搜索账号/昵称" @keyup.enter="loadAdminAccounts(1)" />
+                    <el-input v-model="adminFilters.keyword" class="max-w-xs" clearable placeholder="搜索账号/昵称" @keyup.enter="loadAdminAccounts" />
                     <el-select v-model="adminFilters.status" clearable placeholder="状态" class="!w-36">
                       <el-option label="启用" :value="1" />
                       <el-option label="禁用" :value="0" />
                     </el-select>
-                    <el-button class="!border-brand/15 !text-brand" @click="loadAdminAccounts(1)">筛选</el-button>
+                    <el-button class="!border-brand/15 !text-brand" @click="loadAdminAccounts">筛选</el-button>
                   </div>
 
                   <div class="overflow-hidden rounded-[28px] border border-slate-100">
@@ -104,18 +104,6 @@
                         </tbody>
                       </table>
                     </div>
-                    <div class="border-t border-slate-100 px-5 py-4">
-                      <el-pagination
-                        background
-                        layout="total, sizes, prev, pager, next"
-                        :current-page="adminPagination.pageNum"
-                        :page-size="adminPagination.pageSize"
-                        :page-sizes="PAGE_SIZE_OPTIONS"
-                        :total="adminPagination.total"
-                        @current-change="loadAdminAccounts"
-                        @size-change="handleAdminPageSizeChange"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -126,7 +114,7 @@
                 <div class="grid gap-4 md:grid-cols-3">
                   <div class="rounded-[24px] border border-slate-100 bg-slate-50/70 p-5">
                     <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">筛选结果总数</div>
-                    <div class="mt-3 text-3xl font-bold text-slate-900">{{ postPagination.total }}</div>
+                    <div class="mt-3 text-3xl font-bold text-slate-900">{{ postTotal }}</div>
                     <div class="mt-2 text-sm text-slate-500">当前筛选条件下命中的帖子总数。</div>
                   </div>
                   <div class="rounded-[24px] border border-slate-100 bg-slate-50/70 p-5">
@@ -142,7 +130,7 @@
                 </div>
 
                 <div class="flex flex-wrap gap-3 rounded-[24px] border border-slate-100 bg-slate-50/70 p-4">
-                  <el-input v-model="postFilters.keyword" class="max-w-sm" clearable placeholder="搜索帖子标题/正文" @keyup.enter="loadAdminPosts(1)" />
+                  <el-input v-model="postFilters.keyword" class="max-w-sm" clearable placeholder="搜索帖子标题/正文" @keyup.enter="loadAdminPosts" />
                   <el-select v-model="postFilters.status" clearable placeholder="状态" class="!w-36">
                     <el-option label="审核中" :value="0" />
                     <el-option label="已发布" :value="1" />
@@ -153,7 +141,7 @@
                     <el-option label="可见" :value="1" />
                     <el-option label="隐藏" :value="0" />
                   </el-select>
-                  <el-button class="!border-brand/15 !text-brand" @click="loadAdminPosts(1)">筛选</el-button>
+                  <el-button class="!border-brand/15 !text-brand" @click="loadAdminPosts">筛选</el-button>
                 </div>
 
                 <div v-for="post in adminPosts" :key="post.id" class="rounded-[24px] border border-slate-100 bg-slate-50/70 p-5">
@@ -186,16 +174,6 @@
                 </div>
 
                 <div v-if="!adminPosts.length" class="rounded-[24px] bg-slate-50 p-6 text-sm text-slate-500">暂无符合条件的帖子。</div>
-                <el-pagination
-                  background
-                  layout="total, sizes, prev, pager, next"
-                  :current-page="postPagination.pageNum"
-                  :page-size="postPagination.pageSize"
-                  :page-sizes="PAGE_SIZE_OPTIONS"
-                  :total="postPagination.total"
-                  @current-change="loadAdminPosts"
-                  @size-change="handlePostPageSizeChange"
-                />
               </div>
             </el-tab-pane>
 
@@ -204,7 +182,7 @@
                 <div class="grid gap-4 md:grid-cols-3">
                   <div class="rounded-[24px] border border-slate-100 bg-slate-50/70 p-5">
                     <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">筛选结果总数</div>
-                    <div class="mt-3 text-3xl font-bold text-slate-900">{{ replyPagination.total }}</div>
+                    <div class="mt-3 text-3xl font-bold text-slate-900">{{ replyTotal }}</div>
                     <div class="mt-2 text-sm text-slate-500">当前筛选条件下命中的评论总数。</div>
                   </div>
                   <div class="rounded-[24px] border border-slate-100 bg-slate-50/70 p-5">
@@ -220,7 +198,7 @@
                 </div>
 
                 <div class="flex flex-wrap gap-3 rounded-[24px] border border-slate-100 bg-slate-50/70 p-4">
-                  <el-input v-model="replyFilters.keyword" class="max-w-sm" clearable placeholder="搜索评论内容 / 作者 / 帖子标题" @keyup.enter="loadAdminReplies(1)" />
+                  <el-input v-model="replyFilters.keyword" class="max-w-sm" clearable placeholder="搜索评论内容 / 作者 / 帖子标题" @keyup.enter="loadAdminReplies" />
                   <el-input v-model="replyFilters.postId" class="max-w-xs" clearable placeholder="按帖子 ID 筛选" />
                   <el-select v-model="replyFilters.status" clearable placeholder="状态" class="!w-36">
                     <el-option label="审核中" :value="0" />
@@ -232,7 +210,7 @@
                     <el-option label="可见" :value="1" />
                     <el-option label="隐藏" :value="0" />
                   </el-select>
-                  <el-button class="!border-brand/15 !text-brand" @click="loadAdminReplies(1)">筛选</el-button>
+                  <el-button class="!border-brand/15 !text-brand" @click="loadAdminReplies">筛选</el-button>
                 </div>
 
                 <div v-for="reply in adminReplies" :key="reply.id" class="rounded-[24px] border border-slate-100 bg-slate-50/70 p-5">
@@ -264,16 +242,6 @@
                 </div>
 
                 <div v-if="!adminReplies.length" class="rounded-[24px] bg-slate-50 p-6 text-sm text-slate-500">暂无符合条件的评论。</div>
-                <el-pagination
-                  background
-                  layout="total, sizes, prev, pager, next"
-                  :current-page="replyPagination.pageNum"
-                  :page-size="replyPagination.pageSize"
-                  :page-sizes="PAGE_SIZE_OPTIONS"
-                  :total="replyPagination.total"
-                  @current-change="loadAdminReplies"
-                  @size-change="handleReplyPageSizeChange"
-                />
               </div>
             </el-tab-pane>
 
@@ -282,7 +250,7 @@
                 <div class="grid gap-4 md:grid-cols-3">
                   <div class="rounded-[24px] border border-slate-100 bg-slate-50/70 p-5">
                     <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">筛选结果总数</div>
-                    <div class="mt-3 text-3xl font-bold text-slate-900">{{ userPagination.total }}</div>
+                    <div class="mt-3 text-3xl font-bold text-slate-900">{{ userTotal }}</div>
                     <div class="mt-2 text-sm text-slate-500">当前筛选条件下命中的用户总数。</div>
                   </div>
                   <div class="rounded-[24px] border border-slate-100 bg-slate-50/70 p-5">
@@ -298,7 +266,7 @@
                 </div>
 
                 <div class="flex flex-wrap gap-3 rounded-[24px] border border-slate-100 bg-slate-50/70 p-4">
-                  <el-input v-model="userFilters.keyword" class="max-w-sm" clearable placeholder="搜索账号/昵称" @keyup.enter="loadUserList(1)" />
+                  <el-input v-model="userFilters.keyword" class="max-w-sm" clearable placeholder="搜索账号/昵称" @keyup.enter="loadUserList" />
                   <el-select v-model="userFilters.role" clearable placeholder="角色" class="!w-36">
                     <el-option label="新生" :value="1" />
                     <el-option label="老生" :value="2" />
@@ -309,7 +277,7 @@
                     <el-option label="正常" :value="1" />
                     <el-option label="禁用/封禁" :value="0" />
                   </el-select>
-                  <el-button class="!border-brand/15 !text-brand" @click="loadUserList(1)">筛选</el-button>
+                  <el-button class="!border-brand/15 !text-brand" @click="loadUserList">筛选</el-button>
                 </div>
 
                 <div class="overflow-hidden rounded-[28px] border border-slate-100">
@@ -362,18 +330,6 @@
                       </tbody>
                     </table>
                   </div>
-                  <div class="border-t border-slate-100 px-5 py-4">
-                    <el-pagination
-                      background
-                      layout="total, sizes, prev, pager, next"
-                      :current-page="userPagination.pageNum"
-                      :page-size="userPagination.pageSize"
-                      :page-sizes="PAGE_SIZE_OPTIONS"
-                      :total="userPagination.total"
-                      @current-change="loadUserList"
-                      @size-change="handleUserPageSizeChange"
-                    />
-                  </div>
                 </div>
               </div>
             </el-tab-pane>
@@ -383,7 +339,7 @@
                 <div class="rounded-[28px] border border-slate-100 bg-slate-50/70 p-5">
                   <div class="text-base font-semibold text-slate-900">人工授予头衔</div>
                   <div class="mt-4 space-y-4">
-                    <el-input v-model="grantTitleForm.userId" placeholder="目标用户 ID" />
+                    <el-input v-model="grantTitleForm.username" placeholder="目标账号" />
                     <el-select v-model="grantTitleForm.titleId" placeholder="选择头衔" class="!w-full">
                       <el-option v-for="title in titleOptions" :key="title.id" :label="title.titleName" :value="title.id" />
                     </el-select>
@@ -407,18 +363,6 @@
                       </div>
                       <div v-if="!grantedTitles.length" class="rounded-[18px] bg-white p-4 text-sm text-slate-500">暂无头衔发放记录。</div>
                     </div>
-                    <div class="mt-4">
-                      <el-pagination
-                        background
-                        layout="total, sizes, prev, pager, next"
-                        :current-page="titleGrantPagination.pageNum"
-                        :page-size="titleGrantPagination.pageSize"
-                        :page-sizes="PAGE_SIZE_OPTIONS"
-                        :total="titleGrantPagination.total"
-                        @current-change="loadGrantedTitles"
-                        @size-change="handleTitleGrantPageSizeChange"
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -439,14 +383,14 @@
 
                     <div class="space-y-4">
                       <div class="flex flex-wrap gap-3 rounded-[24px] border border-slate-100 bg-white/80 p-4">
-                        <el-input v-model="knowledgeFilters.keyword" class="max-w-sm" clearable placeholder="搜索问题/答案" @keyup.enter="loadKnowledgeList(1)" />
+                        <el-input v-model="knowledgeFilters.keyword" class="max-w-sm" clearable placeholder="搜索问题/答案" @keyup.enter="loadKnowledgeList" />
                         <el-select v-model="knowledgeFilters.status" clearable placeholder="状态" class="!w-36">
                           <el-option label="待向量化" :value="1" />
                           <el-option label="已启用" :value="2" />
                           <el-option label="已下线" :value="4" />
                         </el-select>
-                        <el-input v-model="knowledgeFilters.category" class="max-w-xs" clearable placeholder="分类" @keyup.enter="loadKnowledgeList(1)" />
-                        <el-button class="!border-brand/15 !text-brand" @click="loadKnowledgeList(1)">筛选</el-button>
+                        <el-input v-model="knowledgeFilters.category" class="max-w-xs" clearable placeholder="分类" @keyup.enter="loadKnowledgeList" />
+                        <el-button class="!border-brand/15 !text-brand" @click="loadKnowledgeList">筛选</el-button>
                       </div>
 
                       <div class="space-y-3">
@@ -466,16 +410,6 @@
                         </div>
                         <div v-if="!knowledgeList.length" class="rounded-[20px] bg-white p-4 text-sm text-slate-500">暂无知识库条目。</div>
                       </div>
-                      <el-pagination
-                        background
-                        layout="total, sizes, prev, pager, next"
-                        :current-page="knowledgePagination.pageNum"
-                        :page-size="knowledgePagination.pageSize"
-                        :page-sizes="PAGE_SIZE_OPTIONS"
-                        :total="knowledgePagination.total"
-                        @current-change="loadKnowledgeList"
-                        @size-change="handleKnowledgePageSizeChange"
-                      />
                     </div>
                   </div>
                 </div>
@@ -490,8 +424,8 @@
                       <el-option label="知识库" :value="4" />
                       <el-option label="头衔" :value="6" />
                     </el-select>
-                    <el-input v-model="logFilters.operationType" class="max-w-xs" clearable placeholder="操作类型，如 DELETE_POST" @keyup.enter="loadAdminLogs(1)" />
-                    <el-button class="!border-brand/15 !text-brand" @click="loadAdminLogs(1)">筛选</el-button>
+                    <el-input v-model="logFilters.operationType" class="max-w-xs" clearable placeholder="操作类型，如 DELETE_POST" @keyup.enter="loadAdminLogs" />
+                    <el-button class="!border-brand/15 !text-brand" @click="loadAdminLogs">筛选</el-button>
                   </div>
 
                   <div class="mt-4 grid gap-3 md:grid-cols-2">
@@ -502,18 +436,6 @@
                       <div v-if="log.reason" class="mt-1 text-xs text-slate-400">备注：{{ log.reason }}</div>
                     </div>
                     <div v-if="!adminLogs.length" class="rounded-[20px] bg-white p-4 text-sm text-slate-500">暂无日志。</div>
-                  </div>
-                  <div class="mt-4">
-                    <el-pagination
-                      background
-                      layout="total, sizes, prev, pager, next"
-                      :current-page="logPagination.pageNum"
-                      :page-size="logPagination.pageSize"
-                      :page-sizes="PAGE_SIZE_OPTIONS"
-                      :total="logPagination.total"
-                      @current-change="loadAdminLogs"
-                      @size-change="handleLogPageSizeChange"
-                    />
                   </div>
                 </div>
               </div>
@@ -555,7 +477,7 @@ import { useAppShell } from '../stores/appShell'
 
 const router = useRouter()
 const { currentUser, ensureShellReady, openAuth } = useAppShell()
-const PAGE_SIZE_OPTIONS = [5, 10, 20]
+const LIST_FETCH_SIZE = 100
 
 const activeTab = ref('posts')
 
@@ -572,6 +494,9 @@ const titleOptions = ref([])
 const grantedTitles = ref([])
 const knowledgeList = ref([])
 const adminLogs = ref([])
+const postTotal = ref(0)
+const replyTotal = ref(0)
+const userTotal = ref(0)
 
 const adminFilters = reactive({ keyword: '', status: null })
 const postFilters = reactive({ keyword: '', status: null, visibility: null })
@@ -580,16 +505,8 @@ const userFilters = reactive({ keyword: '', role: null, status: null })
 const knowledgeFilters = reactive({ keyword: '', status: null, category: '' })
 const logFilters = reactive({ targetType: null, operationType: '' })
 
-const adminPagination = reactive({ pageNum: 1, pageSize: 5, total: 0 })
-const postPagination = reactive({ pageNum: 1, pageSize: 5, total: 0 })
-const replyPagination = reactive({ pageNum: 1, pageSize: 5, total: 0 })
-const userPagination = reactive({ pageNum: 1, pageSize: 5, total: 0 })
-const titleGrantPagination = reactive({ pageNum: 1, pageSize: 5, total: 0 })
-const knowledgePagination = reactive({ pageNum: 1, pageSize: 5, total: 0 })
-const logPagination = reactive({ pageNum: 1, pageSize: 5, total: 0 })
-
 const adminCreateForm = reactive({ username: '', password: '', nickname: '' })
-const grantTitleForm = reactive({ userId: '', titleId: null, wearing: true, remark: '' })
+const grantTitleForm = reactive({ username: '', titleId: null, wearing: true, remark: '' })
 const knowledgeForm = reactive({ questionText: '', answerText: '', category: '', rewardPoints: '' })
 
 const isAdmin = computed(() => [8, 9].includes(currentUser.value?.role))
@@ -650,104 +567,90 @@ function goToPost(postId) {
   router.push(`/forum/${postId}`)
 }
 
-function fillPagination(target, page) {
-  target.pageNum = page.pageNum || 1
-  target.pageSize = page.pageSize || target.pageSize
-  target.total = page.total || 0
-}
-
-async function loadAdminAccounts(pageNum = adminPagination.pageNum) {
+async function loadAdminAccounts() {
   if (!isSuperAdmin.value) return
   const adminPage = await fetchAdminUsers({
     pageNum: 1,
-    pageSize: 200,
+    pageSize: LIST_FETCH_SIZE,
     role: 8,
     status: adminFilters.status,
     keyword: adminFilters.keyword || undefined
   })
   const superAdminPage = await fetchAdminUsers({
     pageNum: 1,
-    pageSize: 50,
+    pageSize: LIST_FETCH_SIZE,
     role: 9,
     status: adminFilters.status,
     keyword: adminFilters.keyword || undefined
   })
-  const mergedAccounts = [...(superAdminPage.records || []), ...(adminPage.records || [])]
-  const fromIndex = (pageNum - 1) * adminPagination.pageSize
-  const toIndex = fromIndex + adminPagination.pageSize
-  adminAccounts.value = mergedAccounts.slice(fromIndex, toIndex)
-  adminPagination.pageNum = pageNum
-  adminPagination.total = mergedAccounts.length
+  adminAccounts.value = [...(superAdminPage.records || []), ...(adminPage.records || [])]
 }
 
-async function loadAdminPosts(pageNum = postPagination.pageNum) {
+async function loadAdminPosts() {
   const page = await fetchAdminPosts({
-    pageNum,
-    pageSize: postPagination.pageSize,
+    pageNum: 1,
+    pageSize: LIST_FETCH_SIZE,
     keyword: postFilters.keyword || undefined,
     status: postFilters.status,
     visibility: postFilters.visibility
   })
   adminPosts.value = page.records || []
-  fillPagination(postPagination, page)
+  postTotal.value = page.total ?? adminPosts.value.length
 }
 
-async function loadAdminReplies(pageNum = replyPagination.pageNum) {
+async function loadAdminReplies() {
   const page = await fetchAdminReplies({
-    pageNum,
-    pageSize: replyPagination.pageSize,
+    pageNum: 1,
+    pageSize: LIST_FETCH_SIZE,
     keyword: replyFilters.keyword || undefined,
     postId: replyFilters.postId ? Number(replyFilters.postId) : undefined,
     status: replyFilters.status,
     visibility: replyFilters.visibility
   })
   adminReplies.value = page.records || []
-  fillPagination(replyPagination, page)
+  replyTotal.value = page.total ?? adminReplies.value.length
 }
 
-async function loadUserList(pageNum = userPagination.pageNum) {
+async function loadUserList() {
   const page = await fetchAdminUsers({
-    pageNum,
-    pageSize: userPagination.pageSize,
+    pageNum: 1,
+    pageSize: LIST_FETCH_SIZE,
     keyword: userFilters.keyword || undefined,
     role: userFilters.role,
     status: userFilters.status
   })
   siteUsers.value = page.records || []
-  fillPagination(userPagination, page)
+  userTotal.value = page.total ?? siteUsers.value.length
 }
 
 async function loadTitleOptions() {
   titleOptions.value = await fetchTitles()
 }
 
-async function loadGrantedTitles(pageNum = titleGrantPagination.pageNum) {
-  const page = await fetchGrantedTitles({ pageNum, pageSize: titleGrantPagination.pageSize })
+async function loadGrantedTitles() {
+  const page = await fetchGrantedTitles({ pageNum: 1, pageSize: LIST_FETCH_SIZE })
   grantedTitles.value = page.records || []
-  fillPagination(titleGrantPagination, page)
 }
 
-async function loadKnowledgeList(pageNum = knowledgePagination.pageNum) {
+async function loadKnowledgeList() {
   const page = await fetchKnowledgeList({
-    pageNum,
-    pageSize: knowledgePagination.pageSize,
+    pageNum: 1,
+    pageSize: LIST_FETCH_SIZE,
     keyword: knowledgeFilters.keyword || undefined,
     status: knowledgeFilters.status,
     category: knowledgeFilters.category || undefined
   })
   knowledgeList.value = page.records || []
-  fillPagination(knowledgePagination, page)
 }
 
-async function loadAdminLogs(pageNum = logPagination.pageNum) {
+async function loadAdminLogs() {
   const page = await fetchAdminLogs({
-    pageNum,
-    pageSize: logPagination.pageSize,
+    pageNum: 1,
+    pageSize: LIST_FETCH_SIZE,
     targetType: logFilters.targetType,
     operationType: logFilters.operationType || undefined
   })
   adminLogs.value = page.records || []
-  fillPagination(logPagination, page)
 }
 
 async function reloadCurrentTab() {
@@ -755,56 +658,21 @@ async function reloadCurrentTab() {
   loading.any = true
   try {
     if (activeTab.value === 'admins' && isSuperAdmin.value) {
-      await loadAdminAccounts(1)
+      await loadAdminAccounts()
     } else if (activeTab.value === 'posts') {
-      await loadAdminPosts(1)
+      await loadAdminPosts()
     } else if (activeTab.value === 'replies') {
-      await loadAdminReplies(1)
+      await loadAdminReplies()
     } else if (activeTab.value === 'users') {
-      await loadUserList(1)
+      await loadUserList()
     } else if (activeTab.value === 'ops') {
-      await Promise.all([loadTitleOptions(), loadGrantedTitles(1), loadKnowledgeList(1), loadAdminLogs(1)])
+      await Promise.all([loadTitleOptions(), loadGrantedTitles(), loadKnowledgeList(), loadAdminLogs()])
     }
   } catch (error) {
     ElMessage.error(error.message)
   } finally {
     loading.any = false
   }
-}
-
-function handleAdminPageSizeChange(pageSize) {
-  adminPagination.pageSize = pageSize
-  loadAdminAccounts(1)
-}
-
-function handlePostPageSizeChange(pageSize) {
-  postPagination.pageSize = pageSize
-  loadAdminPosts(1)
-}
-
-function handleReplyPageSizeChange(pageSize) {
-  replyPagination.pageSize = pageSize
-  loadAdminReplies(1)
-}
-
-function handleUserPageSizeChange(pageSize) {
-  userPagination.pageSize = pageSize
-  loadUserList(1)
-}
-
-function handleTitleGrantPageSizeChange(pageSize) {
-  titleGrantPagination.pageSize = pageSize
-  loadGrantedTitles(1)
-}
-
-function handleKnowledgePageSizeChange(pageSize) {
-  knowledgePagination.pageSize = pageSize
-  loadKnowledgeList(1)
-}
-
-function handleLogPageSizeChange(pageSize) {
-  logPagination.pageSize = pageSize
-  loadAdminLogs(1)
 }
 
 async function submitCreateAdmin() {
@@ -823,7 +691,7 @@ async function submitCreateAdmin() {
     adminCreateForm.password = ''
     adminCreateForm.nickname = ''
     ElMessage.success('管理员账号已创建')
-    await loadAdminAccounts(1)
+    await loadAdminAccounts()
   } catch (error) {
     ElMessage.error(error.message)
   } finally {
@@ -835,7 +703,7 @@ async function toggleAdminStatus(user) {
   try {
     await updateAdminUserStatus(user.id, user.status === 1 ? 0 : 1)
     ElMessage.success(user.status === 1 ? '管理员账号已禁用' : '管理员账号已启用')
-    await loadAdminAccounts(adminPagination.pageNum)
+    await loadAdminAccounts()
   } catch (error) {
     ElMessage.error(error.message)
   }
@@ -857,7 +725,7 @@ async function togglePostVisibility(post) {
       reason: value || (post.visibility === 1 ? '后台隐藏帖子' : '后台恢复帖子')
     })
     ElMessage.success(post.visibility === 1 ? '帖子已隐藏' : '帖子已恢复可见')
-    await loadAdminPosts(postPagination.pageNum)
+    await loadAdminPosts()
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error.message || '操作失败')
@@ -873,7 +741,7 @@ async function confirmDeletePost(post) {
     })
     await deleteAdminPost(post.id, { reason: value || '后台手动删除帖子' })
     ElMessage.success('帖子已删除')
-    await loadAdminPosts(postPagination.pageNum)
+    await loadAdminPosts()
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error.message || '删除失败')
@@ -896,7 +764,7 @@ async function toggleReplyVisibility(reply) {
       reason: value || (reply.visibility === 1 ? '后台隐藏评论' : '后台恢复评论')
     })
     ElMessage.success(reply.visibility === 1 ? '评论已隐藏' : '评论已恢复可见')
-    await loadAdminReplies(replyPagination.pageNum)
+    await loadAdminReplies()
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error.message || '操作失败')
@@ -912,7 +780,7 @@ async function confirmDeleteReply(reply) {
     })
     await deleteAdminReply(reply.id, { reason: value || '后台手动删除评论' })
     ElMessage.success('评论已删除')
-    await loadAdminReplies(replyPagination.pageNum)
+    await loadAdminReplies()
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error.message || '删除失败')
@@ -928,7 +796,7 @@ async function openBanPrompt(user) {
     })
     await banUser(user.id, { reason: value || '后台手动封禁', banExpireAt: null })
     ElMessage.success('用户已封禁')
-    await loadUserList(userPagination.pageNum)
+    await loadUserList()
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error.message || '封禁失败')
@@ -939,30 +807,31 @@ async function handleUnbanUser(user) {
   try {
     await unbanUser(user.id)
     ElMessage.success('用户已解封')
-    await loadUserList(userPagination.pageNum)
+    await loadUserList()
   } catch (error) {
     ElMessage.error(error.message)
   }
 }
 
 async function submitGrantTitle() {
-  if (!grantTitleForm.userId || !grantTitleForm.titleId) {
-    ElMessage.warning('请填写用户 ID 并选择头衔')
+  const username = String(grantTitleForm.username || '').trim()
+  if (!username || !grantTitleForm.titleId) {
+    ElMessage.warning('请填写账号并选择头衔')
     return
   }
   try {
     await grantTitle({
-      userId: Number(grantTitleForm.userId),
+      username,
       titleId: grantTitleForm.titleId,
       wearing: grantTitleForm.wearing,
       remark: grantTitleForm.remark
     })
     ElMessage.success('头衔已授予')
-    grantTitleForm.userId = ''
+    grantTitleForm.username = ''
     grantTitleForm.titleId = null
     grantTitleForm.wearing = true
     grantTitleForm.remark = ''
-    await Promise.all([loadGrantedTitles(1), loadAdminLogs(1)])
+    await Promise.all([loadGrantedTitles(), loadAdminLogs()])
   } catch (error) {
     ElMessage.error(error.message)
   }
@@ -977,7 +846,7 @@ async function revokeGrantedTitle(grant) {
     })
     await revokeTitle(grant.id, { reason: value || '后台撤销头衔' })
     ElMessage.success('头衔已撤销')
-    await Promise.all([loadGrantedTitles(titleGrantPagination.pageNum), loadAdminLogs(1)])
+    await Promise.all([loadGrantedTitles(), loadAdminLogs()])
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error.message)
@@ -1001,7 +870,7 @@ async function submitKnowledge() {
     knowledgeForm.answerText = ''
     knowledgeForm.category = ''
     knowledgeForm.rewardPoints = ''
-    await Promise.all([loadKnowledgeList(1), loadAdminLogs(1)])
+    await Promise.all([loadKnowledgeList(), loadAdminLogs()])
   } catch (error) {
     ElMessage.error(error.message)
   }
@@ -1023,15 +892,11 @@ async function changeKnowledgeStatus(item, status) {
       reason: value || `后台更新为${knowledgeStatusLabel(status)}`
     })
     ElMessage.success('知识条目状态已更新')
-    await Promise.all([loadKnowledgeList(knowledgePagination.pageNum), loadAdminLogs(1)])
+    await Promise.all([loadKnowledgeList(), loadAdminLogs()])
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error.message)
   }
-}
-
-async function bootstrapOpsData() {
-  await Promise.all([loadTitleOptions(), loadGrantedTitles(1), loadKnowledgeList(1), loadAdminLogs(1)])
 }
 
 onMounted(async () => {
@@ -1065,6 +930,9 @@ watch(
     grantedTitles.value = []
     knowledgeList.value = []
     adminLogs.value = []
+    postTotal.value = 0
+    replyTotal.value = 0
+    userTotal.value = 0
   }
 )
 </script>

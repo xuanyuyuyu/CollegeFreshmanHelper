@@ -68,10 +68,15 @@ public class AdminTitleServiceImpl implements AdminTitleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SysUserTitle grantTitle(Long adminUserId, AdminGrantTitleRequest request) {
-        userService.getVisibleById(request.getUserId());
+        String username = normalizeUsername(request.getUsername());
+        SysUser targetUser = userService.findByUsername(username);
+        if (targetUser == null) {
+            throw new BusinessException("账号不存在");
+        }
+        Long userId = targetUser.getId();
         SysTitle title = getEnabledTitle(request.getTitleId());
         SysUserTitle exists = sysUserTitleMapper.selectOne(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysUserTitle>()
-                .eq(SysUserTitle::getUserId, request.getUserId())
+                .eq(SysUserTitle::getUserId, userId)
                 .eq(SysUserTitle::getTitleId, request.getTitleId()));
         if (exists != null) {
             throw new BusinessException("该用户已拥有此头衔");
@@ -79,11 +84,11 @@ public class AdminTitleServiceImpl implements AdminTitleService {
 
         boolean wearing = Boolean.TRUE.equals(request.getWearing());
         if (wearing) {
-            clearWearingForUser(request.getUserId());
+            clearWearingForUser(userId);
         }
 
         SysUserTitle userTitle = new SysUserTitle();
-        userTitle.setUserId(request.getUserId());
+        userTitle.setUserId(userId);
         userTitle.setTitleId(title.getId());
         userTitle.setIsWearing(wearing ? 1 : 0);
         userTitle.setGrantSource(2);
@@ -186,6 +191,14 @@ public class AdminTitleServiceImpl implements AdminTitleService {
             return null;
         }
         return value.trim();
+    }
+
+    private String normalizeUsername(String username) {
+        String normalized = normalize(username);
+        if (normalized == null) {
+            throw new BusinessException("账号不能为空");
+        }
+        return normalized;
     }
 
     private SysUserTitle copy(SysUserTitle source) {

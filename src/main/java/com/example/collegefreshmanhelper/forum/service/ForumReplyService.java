@@ -11,5 +11,7 @@ public interface ForumReplyService extends IService<ForumReply> {
 
     ForumReply createReply(Long postId, Long currentUserId, ForumReplyCreateRequest request);
 
+    void deleteOwnReply(Long postId, Long currentUserId, Long replyId);
+
     List<ForumReplyThreadVO> listPublishedRepliesByPostId(Long postId, Long currentUserId);
 }

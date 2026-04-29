@@ -11,6 +11,8 @@ public interface ForumPostService extends IService<ForumPost> {
 
     ForumPost createPost(Long currentUserId, ForumPostCreateRequest request);
 
+    void deleteOwnPost(Long currentUserId, Long postId);
+
     ForumPostDetailVO getPostDetail(Long postId, boolean incrementView, Long currentUserId);
 
     Page<ForumPostSummaryVO> pagePublishedPosts(long pageNum, long pageSize, String sortType, Long currentUserId);

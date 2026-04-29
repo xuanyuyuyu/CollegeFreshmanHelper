@@ -36,6 +36,13 @@ public class ForumPostController {
         return ApiResponse.success(forumPostService.createPost(LoginUserContext.getCurrentUserId(), request));
     }
 
+    @SaCheckLogin
+    @DeleteMapping("/{postId}")
+    public ApiResponse<Void> deletePost(@PathVariable Long postId) {
+        forumPostService.deleteOwnPost(LoginUserContext.getCurrentUserId(), postId);
+        return ApiResponse.success();
+    }
+
     @GetMapping("/{postId}")
     public ApiResponse<ForumPostDetailVO> getPostDetail(
             @PathVariable Long postId,
