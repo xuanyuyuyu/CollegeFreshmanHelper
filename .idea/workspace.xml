@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3b40f802-aeff-4f09-8847-43dac742294a" name="更改" comment="基本完成论坛、后台管理、我的">
+    <list default="true" id="3b40f802-aeff-4f09-8847-43dac742294a" name="更改" comment="完成“论坛”，“我的”，“头衔”前后端开发">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/ForumDetailPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ForumDetailPage.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/ForumPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ForumPage.vue" afterDir="false" />
@@ -83,7 +83,6 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.CollegeFreshmanHelperApplication.executor": "Run",
-    "git-widget-placeholder": "qianduan1",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
