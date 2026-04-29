@@ -5,9 +5,13 @@ import com.example.collegefreshmanhelper.admin.entity.KnowledgeQaTrace;
 import com.example.collegefreshmanhelper.admin.vo.AdminKnowledgeVO;
 import com.example.collegefreshmanhelper.common.model.PageResult;
 
+import java.util.List;
+
 public interface KnowledgeTraceService {
 
     KnowledgeQaTrace getById(Long knowledgeId);
+
+    List<KnowledgeQaTrace> listEnabledKnowledge();
 
     PageResult<AdminKnowledgeVO> pageKnowledge(long pageNum, long pageSize, String keyword, Integer status, String category);
 

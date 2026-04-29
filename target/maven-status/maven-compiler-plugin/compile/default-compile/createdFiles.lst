@@ -1,4 +1,5 @@
 com/example/collegefreshmanhelper/admin/dto/AdminGrantTitleRequest.class
+com/example/collegefreshmanhelper/rag/service/impl/RagQueryServiceImpl$ResolvedAnswer.class
 com/example/collegefreshmanhelper/admin/service/impl/AdminKnowledgeServiceImpl.class
 com/example/collegefreshmanhelper/user/service/UserStatsSyncService.class
 com/example/collegefreshmanhelper/user/service/UserTitleDisplayService.class
@@ -7,9 +8,11 @@ com/example/collegefreshmanhelper/user/entity/UserStats.class
 com/example/collegefreshmanhelper/admin/controller/AdminTitleController.class
 com/example/collegefreshmanhelper/admin/service/AdminOperationLogService.class
 com/example/collegefreshmanhelper/user/controller/MyCenterController.class
+com/example/collegefreshmanhelper/rag/dto/AssistantAskRequest.class
 com/example/collegefreshmanhelper/knowledge/service/impl/KnowledgeTraceServiceImpl.class
 com/example/collegefreshmanhelper/forum/service/ForumPostService.class
 com/example/collegefreshmanhelper/auth/controller/AuthController.class
+com/example/collegefreshmanhelper/rag/vo/AssistantAnswerVO.class
 com/example/collegefreshmanhelper/forum/mapper/ForumLikeRecordMapper.class
 com/example/collegefreshmanhelper/common/entity/BaseEntity.class
 com/example/collegefreshmanhelper/admin/dto/AdminKnowledgeStatusUpdateRequest.class
@@ -22,6 +25,7 @@ com/example/collegefreshmanhelper/common/config/SecurityConfig.class
 com/example/collegefreshmanhelper/CollegeFreshmanHelperApplication.class
 com/example/collegefreshmanhelper/forum/vo/ForumAuthorVO.class
 com/example/collegefreshmanhelper/common/config/MybatisPlusConfig.class
+com/example/collegefreshmanhelper/rag/service/BailianEmbeddingService.class
 com/example/collegefreshmanhelper/common/exception/BusinessException.class
 com/example/collegefreshmanhelper/forum/vo/ForumReplyVO.class
 com/example/collegefreshmanhelper/user/service/impl/MyCenterServiceImpl.class
@@ -32,6 +36,12 @@ com/example/collegefreshmanhelper/auth/service/AuthService.class
 com/example/collegefreshmanhelper/admin/vo/AdminReplyVO.class
 com/example/collegefreshmanhelper/admin/controller/AdminContentController.class
 com/example/collegefreshmanhelper/user/service/impl/UserStatsSyncServiceImpl.class
+com/example/collegefreshmanhelper/rag/service/impl/BailianLlmServiceImpl.class
+com/example/collegefreshmanhelper/rag/service/impl/RagQueryServiceImpl$ScoredKnowledge.class
+com/example/collegefreshmanhelper/rag/service/impl/BailianEmbeddingServiceImpl.class
+META-INF/spring-configuration-metadata.json
+com/example/collegefreshmanhelper/rag/service/BailianLlmService.class
+com/example/collegefreshmanhelper/rag/config/BailianProperties.class
 com/example/collegefreshmanhelper/forum/mapper/ForumPostImageMapper.class
 com/example/collegefreshmanhelper/admin/controller/AdminOperationLogController.class
 com/example/collegefreshmanhelper/admin/dto/AdminVisibilityUpdateRequest.class
@@ -42,6 +52,7 @@ com/example/collegefreshmanhelper/user/vo/MyCenterLikedItemVO.class
 com/example/collegefreshmanhelper/admin/service/AdminKnowledgeService.class
 com/example/collegefreshmanhelper/auth/config/StpInterfaceImpl.class
 com/example/collegefreshmanhelper/user/vo/MyCenterReplyVO.class
+com/example/collegefreshmanhelper/rag/service/impl/RagQueryServiceImpl.class
 com/example/collegefreshmanhelper/user/entity/SysUser.class
 com/example/collegefreshmanhelper/forum/mapper/ForumPostMapper.class
 com/example/collegefreshmanhelper/forum/service/impl/ForumLikeServiceImpl.class
@@ -76,11 +87,13 @@ com/example/collegefreshmanhelper/workflow/service/ForumKnowledgeWorkflowService
 com/example/collegefreshmanhelper/auth/vo/LoginVO.class
 com/example/collegefreshmanhelper/admin/vo/AdminKnowledgeVO.class
 com/example/collegefreshmanhelper/admin/controller/AdminUserController.class
+com/example/collegefreshmanhelper/rag/vo/AssistantStreamChunkVO.class
 com/example/collegefreshmanhelper/forum/service/impl/ForumPostImageServiceImpl.class
 com/example/collegefreshmanhelper/admin/service/AdminTitleService.class
 com/example/collegefreshmanhelper/admin/mapper/AdminOperationLogMapper.class
 com/example/collegefreshmanhelper/auth/service/impl/AuthServiceImpl.class
 com/example/collegefreshmanhelper/admin/service/AdminUserService.class
+com/example/collegefreshmanhelper/rag/vo/AssistantSourceVO.class
 com/example/collegefreshmanhelper/forum/entity/ForumPost.class
 com/example/collegefreshmanhelper/forum/controller/ForumPostController.class
 com/example/collegefreshmanhelper/user/service/impl/UserStatsServiceImpl.class
@@ -100,6 +113,7 @@ com/example/collegefreshmanhelper/user/vo/MyCenterSummaryVO.class
 com/example/collegefreshmanhelper/user/service/MyCenterService.class
 com/example/collegefreshmanhelper/common/config/JacksonConfig.class
 com/example/collegefreshmanhelper/common/model/PageResult.class
+com/example/collegefreshmanhelper/rag/controller/AssistantController.class
 com/example/collegefreshmanhelper/common/handler/GlobalExceptionHandler.class
 com/example/collegefreshmanhelper/forum/entity/ForumReply.class
 com/example/collegefreshmanhelper/user/vo/UserTitleRuleVO.class

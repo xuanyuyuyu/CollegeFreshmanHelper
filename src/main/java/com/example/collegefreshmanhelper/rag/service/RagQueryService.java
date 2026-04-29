@@ -1,8 +1,14 @@
 package com.example.collegefreshmanhelper.rag.service;
 
-/**
- * RAG 问答链路的预留服务入口。
- * 后续负责检索、上下文组装与模型调用编排。
- */
+import com.example.collegefreshmanhelper.rag.dto.AssistantAskRequest;
+import com.example.collegefreshmanhelper.rag.vo.AssistantAnswerVO;
+import com.example.collegefreshmanhelper.rag.vo.AssistantStreamChunkVO;
+
+import java.util.function.Consumer;
+
 public interface RagQueryService {
+
+    AssistantAnswerVO ask(AssistantAskRequest request);
+
+    void askStream(AssistantAskRequest request, Consumer<AssistantStreamChunkVO> chunkConsumer);
 }

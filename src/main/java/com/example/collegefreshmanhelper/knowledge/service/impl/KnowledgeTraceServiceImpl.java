@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -34,6 +35,15 @@ public class KnowledgeTraceServiceImpl implements KnowledgeTraceService {
     @Override
     public KnowledgeQaTrace getById(Long knowledgeId) {
         return knowledgeId == null ? null : knowledgeQaTraceMapper.selectById(knowledgeId);
+    }
+
+    @Override
+    public List<KnowledgeQaTrace> listEnabledKnowledge() {
+        return knowledgeQaTraceMapper.selectList(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<KnowledgeQaTrace>()
+                .eq(KnowledgeQaTrace::getStatus, 2)
+                .isNotNull(KnowledgeQaTrace::getQuestionText)
+                .isNotNull(KnowledgeQaTrace::getAnswerText)
+                .orderByDesc(KnowledgeQaTrace::getCreatedAt));
     }
 
     @Override

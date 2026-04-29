@@ -53,3 +53,15 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+
+rag:
+  bailian:
+    enabled: true
+    llm-enabled: true
+    embedding-enabled: true
+    base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    llm-model: qwen-plus
+    embedding-model: text-embedding-v4
+    temperature: 0.2
+    embedding-candidate-limit: 10
+    llm-source-limit: 4

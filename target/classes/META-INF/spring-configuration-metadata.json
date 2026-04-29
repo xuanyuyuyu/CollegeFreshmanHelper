@@ -1,0 +1,81 @@
+{
+  "groups": [
+    {
+      "name": "rag.bailian",
+      "type": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "rag.bailian.api-key",
+      "type": "java.lang.String",
+      "description": "百炼 API Key。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties"
+    },
+    {
+      "name": "rag.bailian.base-url",
+      "type": "java.lang.String",
+      "description": "OpenAI 兼容模式基础地址。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "defaultValue": "https:\/\/dashscope.aliyuncs.com\/compatible-mode\/v1"
+    },
+    {
+      "name": "rag.bailian.embedding-candidate-limit",
+      "type": "java.lang.Integer",
+      "description": "文本召回后进入语义重排的候选数。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "defaultValue": 10
+    },
+    {
+      "name": "rag.bailian.embedding-enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用 Embedding 语义重排。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "rag.bailian.embedding-model",
+      "type": "java.lang.String",
+      "description": "Embedding 模型。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "defaultValue": "text-embedding-v4"
+    },
+    {
+      "name": "rag.bailian.enabled",
+      "type": "java.lang.Boolean",
+      "description": "总开关，关闭时完全回退到本地文本召回。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "rag.bailian.llm-enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用 LLM 生成。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "rag.bailian.llm-model",
+      "type": "java.lang.String",
+      "description": "聊天模型。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "defaultValue": "qwen-plus"
+    },
+    {
+      "name": "rag.bailian.llm-source-limit",
+      "type": "java.lang.Integer",
+      "description": "LLM 参与回答时最多拼接的来源数。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "defaultValue": 4
+    },
+    {
+      "name": "rag.bailian.temperature",
+      "type": "java.lang.Double",
+      "description": "生成温度。",
+      "sourceType": "com.example.collegefreshmanhelper.rag.config.BailianProperties",
+      "defaultValue": 0.2
+    }
+  ],
+  "hints": []
+}

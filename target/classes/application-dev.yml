@@ -28,3 +28,10 @@ logging:
   level:
     root: info
     com.example.collegefreshmanhelper: debug
+
+rag:
+  bailian:
+    enabled: ${BAILIAN_ENABLED:true}
+    api-key: ${BAILIAN_API_KEY:}
+    llm-model: ${BAILIAN_LLM_MODEL:qwen-plus}
+    embedding-model: ${BAILIAN_EMBEDDING_MODEL:text-embedding-v4}
